@@ -22,15 +22,24 @@ export const useGameStore = create((set, get) => ({
 
   setTargetingMode: (mode) => set({ targetingMode: mode }),
 
-  addTarget: (target) => set((s) => ({
-    selectedTargets: [...s.selectedTargets, target],
-  })),
+  addTarget: (target) => set((s) => {
+    const existing = s.selectedTargets.find(t => t.type === target.type && t.id === target.id)
+    if (existing) {
+      return { selectedTargets: s.selectedTargets.filter(t => t.id !== target.id) }
+    }
+    if (target.type === 'location') {
+      return { selectedTargets: [target, ...s.selectedTargets.filter(t => t.type !== 'location')] }
+    }
+    return { selectedTargets: [...s.selectedTargets, target] }
+  }),
 
   removeTarget: (targetId) => set((s) => ({
     selectedTargets: s.selectedTargets.filter(t => t.id !== targetId),
   })),
 
   setActionError: (error) => set({ actionError: error }),
+
+  clearActionError: () => set({ actionError: null }),
 
   resetAction: () => set({
     selectedAction: null,
@@ -39,6 +48,13 @@ export const useGameStore = create((set, get) => ({
     selectedTargets: [],
     actionError: null,
   }),
+
+  resetActionKeepCard: () => set((s) => ({
+    selectedAction: null,
+    targetingMode: null,
+    selectedTargets: [],
+    actionError: null,
+  })),
 
   getCurrentPlayer: () => {
     const { gameState } = get()
