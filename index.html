@@ -3,227 +3,239 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Brass: Birmingham - P2P</title>
+    <title>Brass: Birmingham P2P</title>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
       body {
         font-family: Arial, sans-serif;
-        background: #2c3e50;
-        color: #ecf0f1;
+        margin: 0;
         padding: 20px;
+        background: #f5f5f5;
       }
       .container {
         max-width: 1400px;
         margin: 0 auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
       }
       .header {
+        background: #2c3e50;
+        color: white;
+        padding: 20px;
         text-align: center;
-        margin-bottom: 20px;
-        border-bottom: 2px solid #e74c3c;
-        padding-bottom: 10px;
       }
-      h1 {
-        color: #e74c3c;
+      .header h1 {
+        margin: 0;
+      }
+      .connection-setup {
+        background: #ecf0f1;
+        padding: 20px;
+        border-bottom: 2px solid #bdc3c7;
+      }
+      .setup-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 15px;
+      }
+      .setup-box {
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+      }
+      .setup-box h3 {
+        margin-top: 0;
+        color: #2c3e50;
+      }
+      .setup-box textarea {
+        width: 100%;
+        height: 80px;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        font-family: monospace;
+        font-size: 11px;
+        resize: vertical;
+      }
+      .setup-box button {
+        background: #3498db;
+        color: white;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        margin: 5px 5px 5px 0;
+        font-size: 12px;
+      }
+      .setup-box button:hover {
+        background: #2980b9;
       }
       .status {
-        font-size: 14px;
-        color: #95a5a6;
-      }
-      .network-setup {
-        background: #34495e;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 20px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-      }
-      .network-setup h3 {
-        color: #3498db;
-        margin-bottom: 10px;
-      }
-      .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-      }
-      label {
-        font-size: 12px;
-        color: #bdc3c7;
-      }
-      input,
-      button {
-        padding: 8px;
-        border: 1px solid #7f8c8d;
-        border-radius: 3px;
-        background: #2c3e50;
-        color: #ecf0f1;
-      }
-      button {
-        background: #e74c3c;
-        cursor: pointer;
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
         font-weight: bold;
-        transition: background 0.3s;
+        text-align: center;
       }
-      button:hover {
-        background: #c0392b;
+      .status.disconnected {
+        background: #f8d7da;
+        color: #721c24;
       }
-      button:disabled {
-        background: #7f8c8d;
-        cursor: not-allowed;
+      .status.connected {
+        background: #d4edda;
+        color: #155724;
       }
-      #offerText,
-      #answerText {
-        font-size: 11px;
-        word-break: break-all;
-        max-height: 80px;
-        overflow-y: auto;
+      .status.waiting {
+        background: #fff3cd;
+        color: #856404;
       }
       .game-area {
-        display: grid;
-        grid-template-columns: 3fr 1fr;
+        display: none;
+        padding: 20px;
+        grid-template-columns: 1fr 300px;
         gap: 20px;
       }
-      .board {
-        background: #34495e;
-        padding: 20px;
+      .game-area.active {
+        display: grid;
+      }
+      .board-container {
+        background: #f9f9f9;
         border-radius: 5px;
-        border: 2px solid #e74c3c;
+        padding: 15px;
+        overflow-x: auto;
+      }
+      svg {
+        width: 100%;
+        height: auto;
+        min-width: 600px;
       }
       .sidebar {
-        background: #34495e;
-        padding: 20px;
-        border-radius: 5px;
-      }
-      .board h2,
-      .sidebar h2 {
-        color: #3498db;
-        margin-bottom: 15px;
-      }
-      .networks-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        margin-bottom: 20px;
-      }
-      .network {
-        background: #2c3e50;
-        padding: 15px;
-        border-radius: 5px;
-        border-left: 4px solid #f39c12;
-      }
-      .network h3 {
-        color: #f39c12;
-        font-size: 14px;
-        margin-bottom: 10px;
-      }
-      .network.canal {
-        border-left-color: #3498db;
-      }
-      .network.canal h3 {
-        color: #3498db;
-      }
-      .cities {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-      }
-      .city {
-        background: #1c2833;
-        border: 1px solid #7f8c8d;
-        padding: 8px;
-        border-radius: 3px;
-        font-size: 11px;
-        cursor: pointer;
-        transition: all 0.3s;
-      }
-      .city:hover {
-        background: #34495e;
-        border-color: #3498db;
-      }
-      .city.owned {
-        background: #27ae60;
-      }
-      .players-info {
-        background: #2c3e50;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 15px;
-      }
-      .player {
-        padding: 8px;
-        margin-bottom: 8px;
-        background: #1c2833;
-        border-left: 3px solid #95a5a6;
-        font-size: 12px;
-      }
-      .player.current {
-        border-left-color: #e74c3c;
-        background: #34495e;
-      }
-      .hand {
-        background: #2c3e50;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 15px;
-      }
-      .hand h3 {
-        color: #e74c3c;
-        font-size: 13px;
-        margin-bottom: 10px;
-      }
-      .cards {
         display: flex;
-        flex-wrap: wrap;
+        flex-direction: column;
+        gap: 15px;
+      }
+      .sidebar-section {
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+      }
+      .sidebar-section h3 {
+        margin-top: 0;
+        color: #2c3e50;
+        font-size: 14px;
+      }
+      .player-info {
+        background: white;
+        padding: 10px;
+        border-left: 4px solid #3498db;
+        margin: 8px 0;
+        font-size: 13px;
+      }
+      .player-info.current {
+        border-left-color: #e74c3c;
+        background: #ffe8e8;
+      }
+      .hand-cards {
+        display: flex;
+        flex-direction: column;
         gap: 8px;
+        max-height: 300px;
+        overflow-y: auto;
       }
       .card {
-        background: #1c2833;
-        border: 1px solid #7f8c8d;
-        padding: 8px 12px;
+        background: white;
+        border: 2px solid #3498db;
+        padding: 10px;
         border-radius: 3px;
-        font-size: 11px;
         cursor: pointer;
-        transition: all 0.3s;
+        font-size: 12px;
+        transition: all 0.2s;
       }
       .card:hover {
-        background: #34495e;
-        border-color: #3498db;
+        background: #ecf0f1;
       }
       .card.selected {
-        border-color: #e74c3c;
-        background: #34495e;
+        background: #e74c3c;
+        color: white;
+        border-color: #c0392b;
       }
       .action-buttons {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
       }
       .action-buttons button {
+        background: #27ae60;
+        color: white;
         padding: 10px;
-      }
-      .log {
-        background: #1c2833;
-        padding: 10px;
+        border: none;
         border-radius: 3px;
-        font-size: 11px;
-        max-height: 150px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .action-buttons button:hover {
+        background: #229954;
+      }
+      .action-buttons button:disabled {
+        background: #bdc3c7;
+        cursor: not-allowed;
+      }
+      .game-log {
+        max-height: 200px;
         overflow-y: auto;
-        color: #95a5a6;
+        background: white;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        font-size: 12px;
       }
       .log-entry {
-        margin-bottom: 5px;
+        padding: 3px 0;
+        border-bottom: 1px solid #eee;
       }
       .log-entry.own {
         color: #e74c3c;
+        font-weight: bold;
       }
       .log-entry.other {
         color: #3498db;
+      }
+      .log-entry.system {
+        color: #95a5a6;
+        font-style: italic;
+      }
+      .city-label {
+        font-size: 12px;
+        text-anchor: middle;
+        pointer-events: none;
+      }
+      .city-circle {
+        cursor: pointer;
+        stroke: #333;
+        stroke-width: 2;
+      }
+      .city-circle:hover {
+        stroke-width: 3;
+      }
+      .city-circle.player1 {
+        fill: #3498db;
+      }
+      .city-circle.player2 {
+        fill: #e74c3c;
+      }
+      .city-circle.empty {
+        fill: #ecf0f1;
+      }
+      .network-title {
+        font-size: 16px;
+        font-weight: bold;
+        text-anchor: middle;
+      }
+      .setup-hidden {
+        display: none;
       }
     </style>
   </head>
@@ -231,362 +243,449 @@
     <div class="container">
       <div class="header">
         <h1>♠ Brass: Birmingham - P2P Edition</h1>
-        <div class="status">
-          Connection: <span id="connectionStatus">Not connected</span>
-        </div>
       </div>
-      <div class="network-setup">
-        <div>
-          <h3>Peer 1 (Create)</h3>
-          <div class="form-group">
-            <label>Your Name</label>
-            <input
-              type="text"
-              id="player1Name"
-              placeholder="Player 1"
-              value="Player 1"
-            />
-            <button onclick="createOffer()">Generate Offer</button>
-            <label style="margin-top: 10px">Offer (send to Peer 2):</label>
-            <textarea id="offerText" readonly></textarea>
+
+      <!-- CONNECTION SETUP -->
+      <div class="connection-setup" id="setupArea">
+        <div id="status" class="status disconnected">Status: Disconnected</div>
+
+        <div class="setup-row">
+          <div class="setup-box">
+            <h3>👤 Player 1 - Create Offer</h3>
+            <button onclick="createOffer()">Step 1: Generate Offer</button>
+            <label style="font-size: 12px; display: block; margin: 8px 0 4px 0"
+              >Share this with Player 2:</label
+            >
+            <textarea id="offerOutput" readonly></textarea>
+            <button
+              onclick="copyToClipboard('offerOutput')"
+              style="background: #27ae60"
+            >
+              Copy
+            </button>
+          </div>
+
+          <div class="setup-box">
+            <h3>👥 Player 2 - Create Answer</h3>
+            <label style="font-size: 12px; display: block; margin: 0 0 4px 0"
+              >Paste offer from Player 1:</label
+            >
+            <textarea id="offerInput" placeholder="Paste offer..."></textarea>
+            <button onclick="createAnswer()">Step 2: Generate Answer</button>
+            <label style="font-size: 12px; display: block; margin: 8px 0 4px 0"
+              >Share this with Player 1:</label
+            >
+            <textarea id="answerOutput" readonly></textarea>
+            <button
+              onclick="copyToClipboard('answerOutput')"
+              style="background: #27ae60"
+            >
+              Copy
+            </button>
+          </div>
+
+          <div class="setup-box">
+            <h3>👤 Player 1 - Connect</h3>
+            <label style="font-size: 12px; display: block; margin: 0 0 4px 0"
+              >Paste answer from Player 2:</label
+            >
+            <textarea id="answerInput" placeholder="Paste answer..."></textarea>
+            <button onclick="consumeAnswer()">
+              Step 3: Complete Connection
+            </button>
           </div>
         </div>
-        <div>
-          <h3>Peer 2 (Join)</h3>
-          <div class="form-group">
-            <label>Your Name</label>
-            <input
-              type="text"
-              id="player2Name"
-              placeholder="Player 2"
-              value="Player 2"
-            />
-            <label>Paste Offer here:</label>
-            <textarea
-              id="offerInput"
-              placeholder="Paste offer from Peer 1"
-            ></textarea>
-            <button onclick="createAnswer()">Generate Answer</button>
-            <label style="margin-top: 10px">Answer (send to Peer 1):</label>
-            <textarea id="answerText" readonly></textarea>
-          </div>
-        </div>
       </div>
-      <div
-        style="
-          background: #34495e;
-          padding: 15px;
-          border-radius: 5px;
-          margin-bottom: 20px;
-        "
-      >
-        <div class="form-group">
-          <label>Peer 1: Paste Answer here:</label>
-          <textarea
-            id="answerInput"
-            placeholder="Paste answer from Peer 2"
-          ></textarea>
-          <button onclick="consumeAnswer()" style="margin-top: 5px">
-            Connect
-          </button>
+
+      <!-- GAME AREA -->
+      <div class="game-area" id="gameArea">
+        <div class="board-container">
+          <svg
+            id="board"
+            viewBox="0 0 800 600"
+            preserveAspectRatio="xMidYMid meet"
+          ></svg>
         </div>
-      </div>
-      <div class="game-area">
-        <div class="board">
-          <h2>Game Board</h2>
-          <div class="networks-container">
-            <div class="network">
-              <h3>🔗 Rail Network</h3>
-              <div class="cities" id="railCities">
-                <div class="city" onclick="buildNetwork(this, 'rail')">
-                  Manchester
-                </div>
-                <div class="city" onclick="buildNetwork(this, 'rail')">
-                  Liverpool
-                </div>
-                <div class="city" onclick="buildNetwork(this, 'rail')">
-                  Leeds
-                </div>
-                <div class="city" onclick="buildNetwork(this, 'rail')">
-                  Birmingham
-                </div>
-                <div class="city" onclick="buildNetwork(this, 'rail')">
-                  Bristol
-                </div>
-                <div class="city" onclick="buildNetwork(this, 'rail')">
-                  London
-                </div>
-              </div>
-            </div>
-            <div class="network canal">
-              <h3>💧 Canal Network</h3>
-              <div class="cities" id="canalCities">
-                <div class="city" onclick="buildNetwork(this, 'canal')">
-                  Manchester
-                </div>
-                <div class="city" onclick="buildNetwork(this, 'canal')">
-                  Liverpool
-                </div>
-                <div class="city" onclick="buildNetwork(this, 'canal')">
-                  Leeds
-                </div>
-                <div class="city" onclick="buildNetwork(this, 'canal')">
-                  Birmingham
-                </div>
-                <div class="city" onclick="buildNetwork(this, 'canal')">
-                  Bristol
-                </div>
-                <div class="city" onclick="buildNetwork(this, 'canal')">
-                  London
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+
         <div class="sidebar">
-          <h2>Players</h2>
-          <div class="players-info" id="playersInfo"></div>
-          <h2>Your Hand</h2>
-          <div class="hand">
-            <div class="cards" id="playerHand"></div>
+          <div class="sidebar-section">
+            <h3>Players</h3>
+            <div id="playersContainer"></div>
           </div>
+
+          <div class="sidebar-section">
+            <h3>Your Hand</h3>
+            <div class="hand-cards" id="handContainer"></div>
+          </div>
+
           <div class="action-buttons">
-            <button onclick="playCard()">Play Card</button>
-            <button onclick="endTurn()">End Turn</button>
+            <button onclick="playCard()" id="playCardBtn" disabled>
+              Play Card
+            </button>
+            <button onclick="endTurn()" id="endTurnBtn" disabled>
+              End Turn
+            </button>
           </div>
-          <h2 style="margin-top: 20px">Game Log</h2>
-          <div class="log" id="gameLog"></div>
+
+          <div class="sidebar-section">
+            <h3>Log</h3>
+            <div class="game-log" id="gameLog"></div>
+          </div>
         </div>
       </div>
     </div>
+
     <script>
-      // Game State
+      // ========== GAME STATE ==========
       const gameState = {
-        players: [],
-        currentPlayerIndex: 0,
-        railNetwork: {},
-        canalNetwork: {},
-        hands: {},
+        playerId: null,
+        playerNames: ["Player 1", "Player 2"],
+        players: [
+          { money: 30, score: 0, networks: { rail: {}, canal: {} } },
+          { money: 30, score: 0, networks: { rail: {}, canal: {} } },
+        ],
+        currentTurn: 0,
+        hands: [
+          ["Iron", "Coal", "Pottery", "Brewery"],
+          ["Iron", "Coal", "Pottery", "Brewery"],
+        ],
         selectedCard: null,
-        isLocalPlayer: false,
+        gameActive: false,
       };
-      let connection = null;
+
+      const cities = {
+        rail: [
+          { name: "Manchester", x: 150, y: 100 },
+          { name: "Liverpool", x: 80, y: 150 },
+          { name: "Leeds", x: 200, y: 80 },
+          { name: "Sheffield", x: 250, y: 150 },
+          { name: "Birmingham", x: 300, y: 250 },
+          { name: "Bristol", x: 200, y: 350 },
+        ],
+        canal: [
+          { name: "Manchester", x: 450, y: 100 },
+          { name: "Liverpool", x: 380, y: 150 },
+          { name: "Leeds", x: 500, y: 80 },
+          { name: "Sheffield", x: 550, y: 150 },
+          { name: "Birmingham", x: 600, y: 250 },
+          { name: "Bristol", x: 500, y: 350 },
+        ],
+      };
+
+      let peerConnection = null;
       let dataChannel = null;
-      let localStream = null;
-      // Initialize game
-      function initGame() {
-        const cards = [
-          "Iron",
-          "Coal",
-          "Pottery",
-          "Brewery",
-          "Factory",
-          "Network+",
-          "Network++",
-        ];
-        gameState.players = [
-          {
-            name: document.getElementById("player1Name").value,
-            score: 0,
-            money: 30,
-          },
-          {
-            name: document.getElementById("player2Name").value,
-            score: 0,
-            money: 30,
-          },
-        ];
-        gameState.hands = {
-          0: [...cards].sort(() => Math.random() - 0.5),
-          1: [...cards].sort(() => Math.random() - 0.5),
-        };
-        updateUI();
-        addLog("Game initialized!");
+      let isInitiator = false;
+
+      // ========== CONNECTION FUNCTIONS ==========
+      function updateStatus(message, type) {
+        const statusEl = document.getElementById("status");
+        statusEl.textContent = `Status: ${message}`;
+        statusEl.className = `status ${type}`;
       }
-      // WebRTC Setup
+
+      function copyToClipboard(elementId) {
+        const element = document.getElementById(elementId);
+        element.select();
+        document.execCommand("copy");
+        alert("Copied to clipboard!");
+      }
+
       async function createOffer() {
         try {
-          const peerConnection = new RTCPeerConnection({
+          isInitiator = true;
+          gameState.playerId = 0;
+          peerConnection = new RTCPeerConnection({
             iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
           });
-          connection = peerConnection;
-          dataChannel = connection.createDataChannel("brass");
+
+          dataChannel = peerConnection.createDataChannel("brass");
           setupDataChannel();
-          connection.onicecandidate = (e) => {
-            if (e.candidate === null) {
-              document.getElementById("offerText").value = JSON.stringify(
-                connection.localDescription,
+
+          peerConnection.onicecandidate = (event) => {
+            if (event.candidate === null) {
+              const offer = peerConnection.localDescription;
+              document.getElementById("offerOutput").value = JSON.stringify(
+                offer,
+                null,
+                2,
               );
+              updateStatus("Offer created. Share with Player 2.", "waiting");
             }
           };
-          const offer = await connection.createOffer();
-          await connection.setLocalDescription(offer);
-          gameState.isLocalPlayer = true;
-          document.getElementById("player1Name").disabled = true;
-          addLog("Offer generated. Waiting for answer...");
-        } catch (err) {
-          alert("Error creating offer: " + err.message);
+
+          const offer = await peerConnection.createOffer();
+          await peerConnection.setLocalDescription(offer);
+        } catch (error) {
+          alert("Error creating offer: " + error.message);
+          updateStatus("Error creating offer", "disconnected");
         }
       }
+
       async function createAnswer() {
         try {
-          const offer = JSON.parse(document.getElementById("offerInput").value);
-          const peerConnection = new RTCPeerConnection({
+          const offerText = document.getElementById("offerInput").value;
+          if (!offerText.trim()) {
+            alert("Please paste the offer first");
+            return;
+          }
+
+          isInitiator = false;
+          gameState.playerId = 1;
+          peerConnection = new RTCPeerConnection({
             iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
           });
-          connection = peerConnection;
-          connection.ondatachannel = (e) => {
-            dataChannel = e.channel;
+
+          peerConnection.ondatachannel = (event) => {
+            dataChannel = event.channel;
             setupDataChannel();
           };
-          connection.onicecandidate = (e) => {
-            if (e.candidate === null) {
-              document.getElementById("answerText").value = JSON.stringify(
-                connection.localDescription,
+
+          peerConnection.onicecandidate = (event) => {
+            if (event.candidate === null) {
+              const answer = peerConnection.localDescription;
+              document.getElementById("answerOutput").value = JSON.stringify(
+                answer,
+                null,
+                2,
               );
+              updateStatus("Answer created. Share with Player 1.", "waiting");
             }
           };
-          await connection.setRemoteDescription(
+
+          const offer = JSON.parse(offerText);
+          await peerConnection.setRemoteDescription(
             new RTCSessionDescription(offer),
           );
-          const answer = await connection.createAnswer();
-          await connection.setLocalDescription(answer);
-          gameState.isLocalPlayer = false;
-          document.getElementById("player2Name").disabled = true;
-          addLog("Answer generated. Waiting for connection...");
-        } catch (err) {
-          alert("Error creating answer: " + err.message);
+
+          const answer = await peerConnection.createAnswer();
+          await peerConnection.setLocalDescription(answer);
+        } catch (error) {
+          alert("Error creating answer: " + error.message);
+          updateStatus("Error creating answer", "disconnected");
         }
       }
+
       async function consumeAnswer() {
         try {
-          const answer = JSON.parse(
-            document.getElementById("answerInput").value,
-          );
-          await connection.setRemoteDescription(
+          const answerText = document.getElementById("answerInput").value;
+          if (!answerText.trim()) {
+            alert("Please paste the answer first");
+            return;
+          }
+
+          const answer = JSON.parse(answerText);
+          await peerConnection.setRemoteDescription(
             new RTCSessionDescription(answer),
           );
-          addLog("Connected! Starting game...");
-          initGame();
-        } catch (err) {
-          alert("Error consuming answer: " + err.message);
+          updateStatus("Connection established!", "connected");
+          startGame();
+        } catch (error) {
+          alert("Error consuming answer: " + error.message);
+          updateStatus("Error consuming answer", "disconnected");
         }
       }
+
       function setupDataChannel() {
         dataChannel.onopen = () => {
-          document.getElementById("connectionStatus").textContent =
-            "Connected ✓";
-          document.getElementById("connectionStatus").style.color = "#27ae60";
+          updateStatus("Connected!", "connected");
+          addLog("Connection established!", "system");
         };
-        dataChannel.onmessage = (e) => {
-          const message = JSON.parse(e.data);
+
+        dataChannel.onmessage = (event) => {
+          const message = JSON.parse(event.data);
           handleRemoteAction(message);
         };
-        dataChannel.onerror = (err) => {
-          console.error("Data channel error:", err);
+
+        dataChannel.onclose = () => {
+          updateStatus("Disconnected", "disconnected");
+        };
+
+        dataChannel.onerror = (error) => {
+          console.error("Data channel error:", error);
         };
       }
-      // Game Actions
-      function buildNetwork(element, type) {
-        if (!isCurrentPlayer()) return;
-        const cityName = element.textContent;
-        const network =
-          type === "rail" ? gameState.railNetwork : gameState.canalNetwork;
-        if (element.classList.contains("owned")) {
-          delete network[cityName];
-          element.classList.remove("owned");
-        } else {
-          network[cityName] =
-            gameState.players[gameState.currentPlayerIndex].name;
-          element.classList.add("owned");
-        }
-        sendAction({ type: "buildNetwork", city: cityName, networkType: type });
-        addLog("Built " + type + " in " + cityName);
+
+      // ========== GAME FUNCTIONS ==========
+      function startGame() {
+        document.getElementById("setupArea").classList.add("setup-hidden");
+        document.getElementById("gameArea").classList.add("active");
+        gameState.gameActive = true;
+        addLog(`You are Player ${gameState.playerId + 1}`, "system");
+        drawBoard();
+        updateUI();
       }
-      function playCard() {
-        if (!isCurrentPlayer() || !gameState.selectedCard) {
-          alert("Select a card to play");
+
+      function drawBoard() {
+        const svg = document.getElementById("board");
+        svg.innerHTML = "";
+
+        // Draw Rail Network
+        svg.innerHTML += `<text x="150" y="30" class="network-title">Rail Network</text>`;
+        cities.rail.forEach((city, idx) => {
+          const owner = gameState.players[0].networks.rail[city.name]
+            ? 0
+            : gameState.players[1].networks.rail[city.name]
+              ? 1
+              : -1;
+          const ownerClass = owner === -1 ? "empty" : `player${owner + 1}`;
+          svg.innerHTML += `
+                    <circle class="city-circle ${ownerClass}" 
+                            cx="${city.x}" cy="${city.y}" r="20"
+                            onclick="buildNetwork('rail', '${city.name}')"></circle>
+                    <text class="city-label" x="${city.x}" y="${city.y + 3}">${city.name.substring(0, 3)}</text>
+                `;
+        });
+
+        // Draw Canal Network
+        svg.innerHTML += `<text x="450" y="30" class="network-title">Canal Network</text>`;
+        cities.canal.forEach((city, idx) => {
+          const owner = gameState.players[0].networks.canal[city.name]
+            ? 0
+            : gameState.players[1].networks.canal[city.name]
+              ? 1
+              : -1;
+          const ownerClass = owner === -1 ? "empty" : `player${owner + 1}`;
+          svg.innerHTML += `
+                    <circle class="city-circle ${ownerClass}" 
+                            cx="${city.x}" cy="${city.y}" r="20"
+                            onclick="buildNetwork('canal', '${city.name}')"></circle>
+                    <text class="city-label" x="${city.x}" y="${city.y + 3}">${city.name.substring(0, 3)}</text>
+                `;
+        });
+      }
+
+      function buildNetwork(type, cityName) {
+        if (gameState.currentTurn !== gameState.playerId) {
+          addLog("Not your turn!", "system");
           return;
         }
-        const hand = gameState.hands[gameState.currentPlayerIndex];
+
+        const networks = gameState.players[gameState.playerId].networks[type];
+
+        if (networks[cityName]) {
+          delete networks[cityName];
+          gameState.players[gameState.playerId].money += 3;
+        } else {
+          networks[cityName] = true;
+          gameState.players[gameState.playerId].money -= 3;
+        }
+
+        if (gameState.players[gameState.playerId].money < 0) {
+          gameState.players[gameState.playerId].money = 0;
+          addLog("Not enough money!", "system");
+          return;
+        }
+
+        addLog(`Built ${type} in ${cityName}`, "own");
+        sendAction({
+          type: "buildNetwork",
+          networkType: type,
+          cityName: cityName,
+          networks: gameState.players[gameState.playerId].networks,
+          money: gameState.players[gameState.playerId].money,
+        });
+
+        drawBoard();
+        updateUI();
+      }
+
+      function playCard() {
+        if (gameState.currentTurn !== gameState.playerId) {
+          addLog("Not your turn!", "system");
+          return;
+        }
+
+        if (gameState.selectedCard === null) {
+          alert("Select a card first");
+          return;
+        }
+
+        const hand = gameState.hands[gameState.playerId];
         const idx = hand.indexOf(gameState.selectedCard);
         hand.splice(idx, 1);
-        sendAction({ type: "playCard", card: gameState.selectedCard });
-        addLog("Played " + gameState.selectedCard);
+        gameState.players[gameState.playerId].score += 5;
+
+        addLog(`Played ${gameState.selectedCard}`, "own");
+        sendAction({
+          type: "playCard",
+          card: gameState.selectedCard,
+          hand: hand,
+          score: gameState.players[gameState.playerId].score,
+        });
+
         gameState.selectedCard = null;
         updateUI();
       }
+
       function endTurn() {
-        gameState.currentPlayerIndex = 1 - gameState.currentPlayerIndex;
-        sendAction({ type: "endTurn" });
+        if (gameState.currentTurn !== gameState.playerId) {
+          return;
+        }
+
+        gameState.currentTurn = 1 - gameState.currentTurn;
         addLog(
-          gameState.players[gameState.currentPlayerIndex].name + "'s turn",
+          `${gameState.playerNames[gameState.currentTurn]}'s turn`,
+          "system",
         );
+        sendAction({ type: "endTurn" });
         updateUI();
       }
-      // Communication
+
       function sendAction(action) {
         if (dataChannel && dataChannel.readyState === "open") {
           dataChannel.send(JSON.stringify(action));
         }
       }
+
       function handleRemoteAction(action) {
+        const opponentId = 1 - gameState.playerId;
+
         switch (action.type) {
           case "buildNetwork":
-            const net =
-              action.networkType === "rail"
-                ? gameState.railNetwork
-                : gameState.canalNetwork;
-            net[action.city] =
-              gameState.players[1 - gameState.currentPlayerIndex].name;
+            gameState.players[opponentId].networks = action.networks;
+            gameState.players[opponentId].money = action.money;
             addLog(
-              gameState.players[1 - gameState.currentPlayerIndex].name +
-                " built " +
-                action.networkType +
-                " in " +
-                action.city,
+              `Opponent built ${action.networkType} in ${action.cityName}`,
               "other",
             );
+            drawBoard();
             break;
+
           case "playCard":
-            addLog(
-              gameState.players[1 - gameState.currentPlayerIndex].name +
-                " played " +
-                action.card,
-              "other",
-            );
+            gameState.hands[opponentId] = action.hand;
+            gameState.players[opponentId].score = action.score;
+            addLog(`Opponent played ${action.card}`, "other");
             break;
+
           case "endTurn":
-            gameState.currentPlayerIndex = 1 - gameState.currentPlayerIndex;
+            gameState.currentTurn = 1 - gameState.currentTurn;
             addLog(
-              gameState.players[gameState.currentPlayerIndex].name + "'s turn",
-              "other",
+              `${gameState.playerNames[gameState.currentTurn]}'s turn`,
+              "system",
             );
             break;
         }
+
         updateUI();
       }
-      // UI Updates
+
       function updateUI() {
-        updatePlayersInfo();
-        updatePlayerHand();
-      }
-      function updatePlayersInfo() {
-        const info = document.getElementById("playersInfo");
-        info.innerHTML = gameState.players
+        // Update players
+        const playersContainer = document.getElementById("playersContainer");
+        playersContainer.innerHTML = gameState.players
           .map(
             (p, i) => `
-                <div class="player ${i === gameState.currentPlayerIndex ? "current" : ""}">
-                    <strong>${p.name}</strong> - Money: £${p.money} | Score: ${p.score}
+                <div class="player-info ${i === gameState.currentTurn ? "current" : ""}">
+                    <strong>${gameState.playerNames[i]}</strong><br>
+                    Money: £${p.money} | Score: ${p.score}
                 </div>
             `,
           )
           .join("");
-      }
-      function updatePlayerHand() {
-        const hand = document.getElementById("playerHand");
-        const cards = gameState.hands[gameState.currentPlayerIndex] || [];
-        hand.innerHTML = cards
+
+        // Update hand
+        const handContainer = document.getElementById("handContainer");
+        handContainer.innerHTML = gameState.hands[gameState.playerId]
           .map(
             (card) => `
                 <div class="card ${gameState.selectedCard === card ? "selected" : ""}" 
@@ -596,19 +695,24 @@
             `,
           )
           .join("");
+
+        // Update buttons
+        document.getElementById("playCardBtn").disabled =
+          gameState.currentTurn !== gameState.playerId;
+        document.getElementById("endTurnBtn").disabled =
+          gameState.currentTurn !== gameState.playerId;
       }
+
       function selectCard(cardName) {
         gameState.selectedCard =
           gameState.selectedCard === cardName ? null : cardName;
-        updatePlayerHand();
+        updateUI();
       }
-      function isCurrentPlayer() {
-        return gameState.isLocalPlayer === (gameState.currentPlayerIndex === 0);
-      }
+
       function addLog(message, type = "own") {
         const log = document.getElementById("gameLog");
         const entry = document.createElement("div");
-        entry.className = "log-entry " + type;
+        entry.className = `log-entry ${type}`;
         entry.textContent = message;
         log.appendChild(entry);
         log.scrollTop = log.scrollHeight;
@@ -616,4 +720,3 @@
     </script>
   </body>
 </html>
-
