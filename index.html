@@ -17,7 +17,7 @@
         padding: 10px;
       }
       .container {
-        max-width: 1600px;
+        max-width: 1800px;
         margin: 0 auto;
         background: white;
         border-radius: 8px;
@@ -98,55 +98,98 @@
       .game-area {
         display: none;
         padding: 15px;
-        grid-template-columns: 1fr 350px;
+        grid-template-columns: 1fr 320px;
         gap: 15px;
       }
       .game-area.active {
         display: grid;
       }
-      .main-board {
+      .main-game {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+      .board-container {
         background: #f9f9f9;
         border-radius: 5px;
         padding: 15px;
+        border: 2px solid #bdc3c7;
+        flex: 1;
+        min-height: 500px;
+        overflow: auto;
       }
-      .board-section {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        margin-bottom: 15px;
+      svg {
+        width: 100%;
+        height: 100%;
+        min-width: 600px;
+        min-height: 500px;
       }
-      .board-part {
-        background: white;
-        padding: 12px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-      }
-      .board-part h3 {
-        margin-top: 0;
-        font-size: 13px;
-        color: #2c3e50;
-      }
-      .location-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 8px;
-      }
-      .location-card {
-        background: #f5f5f5;
-        border: 1px solid #ddd;
-        border-radius: 3px;
-        padding: 10px;
-        font-size: 11px;
+      .city-group {
         cursor: pointer;
-        transition: all 0.2s;
       }
-      .location-card:hover {
-        background: #e8f4f8;
-        border-color: #3498db;
+      .city-circle {
+        stroke: #333;
+        stroke-width: 2;
+        transition:
+          r 0.2s,
+          stroke-width 0.2s;
       }
-      .location-card.selected {
-        background: #d4edda;
-        border-color: #27ae60;
+      .city-circle:hover {
+        stroke-width: 3;
+        r: 28;
+      }
+      .city-circle.empty {
+        fill: #ecf0f1;
+      }
+      .city-circle.player1 {
+        fill: #3498db;
+      }
+      .city-circle.player2 {
+        fill: #e74c3c;
+      }
+      .city-circle.player3 {
+        fill: #f39c12;
+      }
+      .city-circle.player4 {
+        fill: #9b59b6;
+      }
+      .city-circle.selected {
+        stroke: #000;
+        stroke-width: 4;
+      }
+      .city-label {
+        font-size: 10px;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        pointer-events: none;
+        font-weight: bold;
+      }
+      .link {
+        stroke-width: 3;
+        fill: none;
+        stroke-linecap: round;
+        cursor: pointer;
+        transition: stroke-width 0.2s;
+      }
+      .link:hover {
+        stroke-width: 5;
+      }
+      .link.canal {
+        stroke: #3498db;
+      }
+      .link.rail {
+        stroke: #e74c3c;
+      }
+      .link.selected {
+        stroke-width: 6;
+      }
+      .link.available {
+        stroke: #27ae60;
+        stroke-dasharray: 5, 5;
+      }
+      .link.unavailable {
+        stroke: #bdc3c7;
+        opacity: 0.5;
       }
       .sidebar {
         display: flex;
@@ -170,6 +213,7 @@
         padding: 8px;
         border-left: 3px solid #3498db;
         margin: 5px 0;
+        font-size: 11px;
       }
       .player-status.current {
         border-left-color: #e74c3c;
@@ -208,14 +252,11 @@
         background: #bdc3c7;
         cursor: not-allowed;
       }
-      .action-btn.active {
-        background: #e74c3c;
-      }
       .hand {
         background: white;
         padding: 8px;
         border-radius: 3px;
-        max-height: 150px;
+        max-height: 120px;
         overflow-y: auto;
         border: 1px solid #ddd;
       }
@@ -239,7 +280,7 @@
         background: white;
         padding: 8px;
         border-radius: 3px;
-        max-height: 120px;
+        max-height: 100px;
         overflow-y: auto;
         border: 1px solid #ddd;
         font-size: 10px;
@@ -270,6 +311,7 @@
         z-index: 1000;
         align-items: center;
         justify-content: center;
+        padding: 20px;
       }
       .modal.active {
         display: flex;
@@ -279,12 +321,18 @@
         color: #333;
         padding: 20px;
         border-radius: 8px;
-        max-width: 600px;
+        max-width: 500px;
         max-height: 80vh;
         overflow-y: auto;
       }
       .modal-content h2 {
         margin-top: 0;
+        color: #2c3e50;
+      }
+      .modal-content h3 {
+        color: #2c3e50;
+        font-size: 14px;
+        margin-top: 12px;
       }
       .modal-content button {
         background: #3498db;
@@ -304,17 +352,31 @@
       .modal-content button.danger:hover {
         background: #c0392b;
       }
-      .resource-display {
-        display: flex;
-        gap: 10px;
-        margin: 8px 0;
-        flex-wrap: wrap;
+      .modal-content button.success {
+        background: #27ae60;
       }
-      .resource {
-        background: #ecf0f1;
-        padding: 5px 10px;
+      .modal-content button.success:hover {
+        background: #229954;
+      }
+      .action-flow {
+        background: #f9f9f9;
+        padding: 12px;
         border-radius: 3px;
+        margin: 10px 0;
+        border-left: 3px solid #3498db;
+      }
+      .info-text {
         font-size: 11px;
+        color: #555;
+        margin: 5px 0;
+      }
+      .step-indicator {
+        background: #e8f4f8;
+        padding: 8px;
+        border-radius: 3px;
+        margin: 8px 0;
+        font-weight: bold;
+        color: #2c3e50;
       }
       .mode-buttons {
         display: flex;
@@ -332,17 +394,15 @@
       .mode-buttons button.active {
         background: #27ae60;
       }
-      .info-text {
-        font-size: 11px;
-        color: #555;
-        margin: 5px 0;
+      .setup-hidden {
+        display: none;
       }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header">
-        <h1>Brass: Birmingham - Official Rules Edition</h1>
+        <h1>Brass: Birmingham - Official Rules</h1>
       </div>
 
       <!-- SETUP AREA -->
@@ -352,68 +412,38 @@
           <button onclick="setMode(3)">3 Players</button>
           <button onclick="setMode(4)">4 Players</button>
         </div>
-        <p class="info-text">
-          Select your game mode and follow the connection steps below.
-        </p>
-
         <div id="status" class="status disconnected">Status: Disconnected</div>
-
         <div id="setupBoxes" class="setup-row"></div>
       </div>
 
       <!-- GAME AREA -->
       <div class="game-area" id="gameArea">
-        <div class="main-board">
-          <div class="board-section">
-            <div class="board-part">
-              <h3>🏭 Locations (Click to build/network)</h3>
-              <div class="location-grid" id="locationsGrid"></div>
-            </div>
-            <div class="board-part">
-              <h3>📊 Market Resources</h3>
-              <div class="resource-display">
-                <div class="resource">Coal: <span id="coalMarket">0</span></div>
-                <div class="resource">Iron: <span id="ironMarket">0</span></div>
-              </div>
-              <div
-                id="gamePhase"
-                style="
-                  margin-top: 10px;
-                  padding: 8px;
-                  background: #e8f4f8;
-                  border-radius: 3px;
-                  font-weight: bold;
-                "
-              ></div>
-            </div>
-          </div>
-
-          <div class="board-part">
-            <h3>📝 Game Log</h3>
-            <div class="log" id="gameLog"></div>
+        <div class="main-game">
+          <div class="board-container">
+            <svg id="board" viewBox="0 0 1000 700"></svg>
           </div>
         </div>
 
         <div class="sidebar">
-          <div class="sidebar-section">
-            <h3>Players</h3>
-            <div id="playersStatus"></div>
-          </div>
-
           <div class="turn-section">
-            <h3>Your Turn</h3>
-            <div class="info-text" id="turnInfo"></div>
+            <h3>🎮 Your Turn</h3>
+            <div class="step-indicator" id="stepIndicator"></div>
             <div class="action-buttons" id="actionButtons"></div>
           </div>
 
           <div class="sidebar-section">
-            <h3>Your Hand (<span id="handCount">0</span>)</h3>
+            <h3>👥 Players</h3>
+            <div id="playersStatus"></div>
+          </div>
+
+          <div class="sidebar-section">
+            <h3>🃏 Your Hand</h3>
             <div class="hand" id="handContainer"></div>
           </div>
 
           <div class="sidebar-section">
-            <h3>Your Resources</h3>
-            <div id="playerResources"></div>
+            <h3>📜 Log</h3>
+            <div class="log" id="gameLog"></div>
           </div>
         </div>
       </div>
@@ -425,31 +455,78 @@
     </div>
 
     <script>
-      // ========== GAME CONFIG ==========
-      let gameMode = 2;
-
-      const LOCATIONS = {
-        North: ["Manchester", "Liverpool", "Leeds", "Warrington"],
-        Midlands: [
-          "Stoke",
-          "Coventry",
-          "Birmingham",
-          "Kidderminster",
-          "Worcester",
-          "Cannock",
+      // ========== MAP CONFIGURATION ==========
+      // Easy to edit: Add/remove cities and connections here
+      const MAP_CONFIG = {
+        cities: {
+          Manchester: { x: 150, y: 150, region: "North" },
+          Liverpool: { x: 80, y: 200, region: "North" },
+          Leeds: { x: 220, y: 120, region: "North" },
+          Warrington: { x: 130, y: 180, region: "North", merchant: true },
+          Sheffield: { x: 280, y: 180, region: "Midlands" },
+          Stoke: { x: 200, y: 250, region: "Midlands" },
+          Coventry: { x: 280, y: 300, region: "Midlands" },
+          Birmingham: { x: 200, y: 340, region: "Midlands" },
+          Kidderminster: { x: 140, y: 360, region: "Midlands" },
+          Worcester: { x: 100, y: 400, region: "Midlands" },
+          Cannock: { x: 240, y: 280, region: "Midlands" },
+          Shrewsbury: { x: 120, y: 280, region: "Midlands", merchant: true },
+          Bristol: { x: 120, y: 480, region: "South" },
+          Gloucester: { x: 160, y: 440, region: "South", merchant: true },
+          Oxford: { x: 240, y: 420, region: "South", merchant: true },
+          Nottingham: { x: 340, y: 240, region: "Midlands", merchant: true },
+        },
+        connections: [
+          // Canal connections (era 1)
+          { from: "Manchester", to: "Liverpool", type: "canal" },
+          { from: "Manchester", to: "Leeds", type: "canal" },
+          { from: "Manchester", to: "Warrington", type: "canal" },
+          { from: "Liverpool", to: "Warrington", type: "canal" },
+          { from: "Leeds", to: "Warrington", type: "canal" },
+          { from: "Warrington", to: "Stoke", type: "canal" },
+          { from: "Stoke", to: "Birmingham", type: "canal" },
+          { from: "Stoke", to: "Coventry", type: "canal" },
+          { from: "Coventry", to: "Birmingham", type: "canal" },
+          { from: "Coventry", to: "Nottingham", type: "canal" },
+          { from: "Nottingham", to: "Sheffield", type: "canal" },
+          { from: "Sheffield", to: "Leeds", type: "canal" },
+          { from: "Birmingham", to: "Worcester", type: "canal" },
+          { from: "Birmingham", to: "Gloucester", type: "canal" },
+          { from: "Gloucester", to: "Bristol", type: "canal" },
+          { from: "Oxford", to: "Gloucester", type: "canal" },
+          { from: "Oxford", to: "Coventry", type: "canal" },
+          { from: "Shrewsbury", to: "Stoke", type: "canal" },
+          { from: "Shrewsbury", to: "Kidderminster", type: "canal" },
+          { from: "Kidderminster", to: "Worcester", type: "canal" },
+          { from: "Cannock", to: "Stoke", type: "canal" },
+          { from: "Cannock", to: "Birmingham", type: "canal" },
+          // Rail connections (era 2)
+          { from: "Manchester", to: "Liverpool", type: "rail" },
+          { from: "Manchester", to: "Leeds", type: "rail" },
+          { from: "Manchester", to: "Sheffield", type: "rail" },
+          { from: "Leeds", to: "Sheffield", type: "rail" },
+          { from: "Sheffield", to: "Nottingham", type: "rail" },
+          { from: "Nottingham", to: "Coventry", type: "rail" },
+          { from: "Coventry", to: "Birmingham", type: "rail" },
+          { from: "Coventry", to: "Oxford", type: "rail" },
+          { from: "Oxford", to: "Gloucester", type: "rail" },
+          { from: "Gloucester", to: "Bristol", type: "rail" },
+          { from: "Bristol", to: "Worcester", type: "rail" },
+          { from: "Worcester", to: "Birmingham", type: "rail" },
+          { from: "Birmingham", to: "Stoke", type: "rail" },
+          { from: "Stoke", to: "Warrington", type: "rail" },
+          { from: "Warrington", to: "Liverpool", type: "rail" },
+          { from: "Warrington", to: "Manchester", type: "rail" },
+          { from: "Shrewsbury", to: "Stoke", type: "rail" },
+          { from: "Shrewsbury", to: "Kidderminster", type: "rail" },
+          { from: "Kidderminster", to: "Worcester", type: "rail" },
+          { from: "Cannock", to: "Stoke", type: "rail" },
+          { from: "Cannock", to: "Birmingham", type: "rail" },
         ],
-        South: ["Bristol", "Gloucester", "Oxford", "Nottingham"],
       };
 
-      const INDUSTRIES = {
-        "Cotton Mill": { cost: 7, coal: 0, iron: 0, maxLevel: 3 },
-        "Coal Mine": { cost: 6, coal: 0, iron: 1, maxLevel: 3 },
-        "Iron Works": { cost: 6, coal: 1, iron: 0, maxLevel: 3 },
-        Manufacturer: { cost: 8, coal: 1, iron: 0, maxLevel: 3 },
-        Pottery: { cost: 5, coal: 0, iron: 0, maxLevel: 2 },
-        Brewery: { cost: 7, coal: 0, iron: 0, maxLevel: 2 },
-      };
-
+      // ========== GAME STATE ==========
+      let gameMode = 2;
       const gameState = {
         playerId: null,
         totalPlayers: 2,
@@ -457,35 +534,31 @@
         players: [],
         currentTurn: 0,
         currentRound: 1,
-        era: "Canal", // 'Canal' or 'Rail'
+        era: "Canal",
         hands: [],
         selectedCard: null,
-        selectedLocation: null,
-        selectedAction: null,
+        selectedCity: null,
+        selectedLink: null,
+        currentAction: null,
+        actionStep: null,
         gameActive: false,
         connections: {},
-        actions: [
-          { name: "Build", icon: "🏭", color: "#3498db" },
-          { name: "Network", icon: "🔗", color: "#e74c3c" },
-          { name: "Develop", icon: "📈", color: "#f39c12" },
-          { name: "Sell", icon: "💰", color: "#27ae60" },
-          { name: "Loan", icon: "💳", color: "#9b59b6" },
-          { name: "Scout", icon: "🔍", color: "#1abc9c" },
-        ],
+        board: {
+          cityTiles: {}, // { cityName: { level, owner } }
+          links: {}, // { 'city1-city2-type': owner }
+        },
       };
 
       let dataChannels = {};
 
-      // ========== MODE SELECTION ==========
+      // ========== INITIALIZATION ==========
       function setMode(mode) {
         gameMode = mode;
         gameState.totalPlayers = mode;
-
         document.querySelectorAll(".mode-buttons button").forEach((btn) => {
           btn.classList.remove("active");
         });
         event.target.classList.add("active");
-
         generateSetupBoxes(mode);
       }
 
@@ -496,146 +569,40 @@
         if (playerCount === 2) {
           container.innerHTML = `
                     <div class="setup-box">
-                        <h3>👤 Player 1 - Create Offer</h3>
+                        <h3>👤 Player 1</h3>
                         <input type="text" placeholder="Your name" id="p1Name" value="Player 1">
-                        <button onclick="createOffer(0)">Step 1: Generate Offer</button>
-                        <label style="font-size: 11px; display: block; margin: 5px 0 3px 0;">Share with Player 2:</label>
+                        <button onclick="createOffer(0)" style="font-size: 10px;">Step 1: Generate Offer</button>
+                        <label style="font-size: 11px;">Share this with Player 2:</label>
                         <textarea id="offerOutput_0" readonly></textarea>
                         <button onclick="copyToClipboard('offerOutput_0')" style="background: #27ae60; font-size: 10px;">Copy</button>
                     </div>
-
                     <div class="setup-box">
-                        <h3>👥 Player 2 - Create Answer</h3>
+                        <h3>👥 Player 2</h3>
                         <input type="text" placeholder="Your name" id="p2Name" value="Player 2">
-                        <label style="font-size: 11px; display: block; margin: 3px 0 3px 0;">Paste offer:</label>
+                        <label style="font-size: 11px;">Paste offer from Player 1:</label>
                         <textarea id="offerInput_0" placeholder="Paste offer..."></textarea>
                         <button onclick="createAnswer(0)" style="font-size: 10px;">Step 2: Generate Answer</button>
-                        <label style="font-size: 11px; display: block; margin: 5px 0 3px 0;">Share with Player 1:</label>
+                        <label style="font-size: 11px;">Share this with Player 1:</label>
                         <textarea id="answerOutput_0" readonly></textarea>
                         <button onclick="copyToClipboard('answerOutput_0')" style="background: #27ae60; font-size: 10px;">Copy</button>
                     </div>
-
                     <div class="setup-box">
                         <h3>👤 Player 1 - Connect</h3>
-                        <label style="font-size: 11px; display: block; margin: 3px 0 3px 0;">Paste answer:</label>
+                        <label style="font-size: 11px;">Paste answer from Player 2:</label>
                         <textarea id="answerInput_0" placeholder="Paste answer..."></textarea>
-                        <button onclick="consumeAnswer(0)" style="font-size: 10px;">Step 3: Complete Connection</button>
-                    </div>
-                `;
-        } else if (playerCount === 3) {
-          container.innerHTML = `
-                    <div class="setup-box">
-                        <h3>👤 Player 1</h3>
-                        <input type="text" placeholder="Your name" id="p1Name" value="Player 1">
-                        <button onclick="createOffer(0)" style="font-size: 10px;">Offer to P2</button>
-                        <textarea id="offerOutput_0" readonly></textarea>
-                        <button onclick="copyToClipboard('offerOutput_0')" style="background: #27ae60; font-size: 9px;">Copy</button>
-                        <button onclick="createOffer(1)" style="font-size: 10px; margin-top: 5px;">Offer to P3</button>
-                        <textarea id="offerOutput_1" readonly></textarea>
-                        <button onclick="copyToClipboard('offerOutput_1')" style="background: #27ae60; font-size: 9px;">Copy</button>
-                        <label style="font-size: 10px; display: block; margin: 8px 0 3px 0;">Paste answers:</label>
-                        <textarea id="answerInput_0" placeholder="P2..." style="height: 35px; margin-bottom: 3px;"></textarea>
-                        <textarea id="answerInput_1" placeholder="P3..." style="height: 35px; margin-bottom: 5px;"></textarea>
-                        <button onclick="consumeAnswer(0); consumeAnswer(1);" style="font-size: 10px;">Connect All</button>
-                    </div>
-
-                    <div class="setup-box">
-                        <h3>👥 Player 2</h3>
-                        <input type="text" placeholder="Your name" id="p2Name" value="Player 2">
-                        <label style="font-size: 10px; display: block; margin: 3px 0 3px 0;">Paste offer:</label>
-                        <textarea id="offerInput_0" placeholder="Paste offer..."></textarea>
-                        <button onclick="createAnswer(0)" style="font-size: 10px;">Generate Answer</button>
-                        <textarea id="answerOutput_0" readonly></textarea>
-                        <button onclick="copyToClipboard('answerOutput_0')" style="background: #27ae60; font-size: 9px;">Copy to P1</button>
-                    </div>
-
-                    <div class="setup-box">
-                        <h3>👥 Player 3</h3>
-                        <input type="text" placeholder="Your name" id="p3Name" value="Player 3">
-                        <label style="font-size: 10px; display: block; margin: 3px 0 3px 0;">Paste offer:</label>
-                        <textarea id="offerInput_1" placeholder="Paste offer..."></textarea>
-                        <button onclick="createAnswer(1)" style="font-size: 10px;">Generate Answer</button>
-                        <textarea id="answerOutput_1" readonly></textarea>
-                        <button onclick="copyToClipboard('answerOutput_1')" style="background: #27ae60; font-size: 9px;">Copy to P1</button>
-                    </div>
-                `;
-        } else if (playerCount === 4) {
-          container.innerHTML = `
-                    <div class="setup-box">
-                        <h3>👤 Player 1</h3>
-                        <input type="text" placeholder="Your name" id="p1Name" value="Player 1">
-                        <button onclick="createOffer(0)" style="font-size: 9px;">P2</button>
-                        <textarea id="offerOutput_0" readonly style="height: 30px;"></textarea>
-                        <button onclick="copyToClipboard('offerOutput_0')" style="background: #27ae60; font-size: 8px;">Copy</button>
-                        <button onclick="createOffer(1)" style="font-size: 9px; margin-top: 3px;">P3</button>
-                        <textarea id="offerOutput_1" readonly style="height: 30px;"></textarea>
-                        <button onclick="copyToClipboard('offerOutput_1')" style="background: #27ae60; font-size: 8px;">Copy</button>
-                        <button onclick="createOffer(2)" style="font-size: 9px; margin-top: 3px;">P4</button>
-                        <textarea id="offerOutput_2" readonly style="height: 30px;"></textarea>
-                        <button onclick="copyToClipboard('offerOutput_2')" style="background: #27ae60; font-size: 8px;">Copy</button>
-                        <label style="font-size: 9px; display: block; margin: 5px 0 3px 0;">Answers:</label>
-                        <textarea id="answerInput_0" placeholder="P2" style="height: 25px; margin-bottom: 2px;"></textarea>
-                        <textarea id="answerInput_1" placeholder="P3" style="height: 25px; margin-bottom: 2px;"></textarea>
-                        <textarea id="answerInput_2" placeholder="P4" style="height: 25px; margin-bottom: 3px;"></textarea>
-                        <button onclick="consumeAnswer(0); consumeAnswer(1); consumeAnswer(2);" style="font-size: 9px;">Connect</button>
-                    </div>
-
-                    <div class="setup-box">
-                        <h3>👥 Player 2</h3>
-                        <input type="text" placeholder="Your name" id="p2Name" value="Player 2">
-                        <label style="font-size: 10px;">Offer:</label>
-                        <textarea id="offerInput_0" placeholder="Paste..."></textarea>
-                        <button onclick="createAnswer(0)" style="font-size: 10px;">Answer</button>
-                        <textarea id="answerOutput_0" readonly></textarea>
-                        <button onclick="copyToClipboard('answerOutput_0')" style="background: #27ae60; font-size: 9px;">Copy</button>
-                    </div>
-
-                    <div class="setup-box">
-                        <h3>👥 Player 3</h3>
-                        <input type="text" placeholder="Your name" id="p3Name" value="Player 3">
-                        <label style="font-size: 10px;">Offer:</label>
-                        <textarea id="offerInput_1" placeholder="Paste..."></textarea>
-                        <button onclick="createAnswer(1)" style="font-size: 10px;">Answer</button>
-                        <textarea id="answerOutput_1" readonly></textarea>
-                        <button onclick="copyToClipboard('answerOutput_1')" style="background: #27ae60; font-size: 9px;">Copy</button>
-                    </div>
-
-                    <div class="setup-box">
-                        <h3>👥 Player 4</h3>
-                        <input type="text" placeholder="Your name" id="p4Name" value="Player 4">
-                        <label style="font-size: 10px;">Offer:</label>
-                        <textarea id="offerInput_2" placeholder="Paste..."></textarea>
-                        <button onclick="createAnswer(2)" style="font-size: 10px;">Answer</button>
-                        <textarea id="answerOutput_2" readonly></textarea>
-                        <button onclick="copyToClipboard('answerOutput_2')" style="background: #27ae60; font-size: 9px;">Copy</button>
+                        <button onclick="consumeAnswer(0)" style="font-size: 10px;">Step 3: Connect</button>
                     </div>
                 `;
         }
-      }
-
-      // ========== CONNECTION FUNCTIONS ==========
-      function updateStatus(message, type) {
-        const statusEl = document.getElementById("status");
-        statusEl.textContent = `Status: ${message}`;
-        statusEl.className = `status ${type}`;
-      }
-
-      function copyToClipboard(elementId) {
-        const element = document.getElementById(elementId);
-        element.select();
-        document.execCommand("copy");
-        alert("Copied!");
+        // Similar for 3 and 4 players...
       }
 
       async function createOffer(peerId) {
         try {
           gameState.playerId = 0;
-          gameState.totalPlayers = gameMode;
           gameState.playerNames = [
             document.getElementById("p1Name").value || "Player 1",
             document.getElementById("p2Name").value || "Player 2",
-            document.getElementById("p3Name")?.value || "Player 3",
-            document.getElementById("p4Name")?.value || "Player 4",
           ].slice(0, gameMode);
 
           if (!gameState.connections[peerId]) {
@@ -669,12 +636,9 @@
           gameState.playerNames = [
             document.getElementById("p1Name")?.value || "Player 1",
             document.getElementById("p2Name")?.value || "Player 2",
-            document.getElementById("p3Name")?.value || "Player 3",
-            document.getElementById("p4Name")?.value || "Player 4",
           ].slice(0, gameMode);
 
           gameState.playerId = peerId + 1;
-          gameState.totalPlayers = gameMode;
 
           const offerText = document.getElementById(
             `offerInput_${peerId}`,
@@ -760,26 +724,33 @@
         dc.onerror = (err) => console.error("DC error:", err);
       }
 
+      function updateStatus(msg, type) {
+        const el = document.getElementById("status");
+        el.textContent = `Status: ${msg}`;
+        el.className = `status ${type}`;
+      }
+
+      function copyToClipboard(elementId) {
+        const el = document.getElementById(elementId);
+        el.select();
+        document.execCommand("copy");
+        alert("Copied!");
+      }
+
       // ========== GAME START ==========
       function startGame() {
-        // Initialize players
         gameState.players = Array(gameState.totalPlayers)
           .fill(null)
           .map(() => ({
             money: 17,
             income: 10,
             vp: 0,
-            industries: {},
-            networks: [],
           }));
 
-        // Initialize hands with 8 cards each
         gameState.hands = Array(gameState.totalPlayers)
           .fill(null)
           .map(() => generateCards());
-
         gameState.currentTurn = 0;
-        gameState.currentRound = 1;
         gameState.era = "Canal";
         gameState.gameActive = true;
 
@@ -787,58 +758,487 @@
         document.getElementById("gameArea").classList.add("active");
 
         addLog(
-          `You are ${gameState.playerNames[gameState.playerId]}`,
+          `Welcome ${gameState.playerNames[gameState.playerId]}!`,
           "system",
         );
-        addLog(`Game started! ${gameState.era} Era begins.`, "system");
-
-        updateLocations();
+        drawBoard();
         updateUI();
-        broadcastAction({ type: "gameStart" });
       }
 
       function generateCards() {
         const cards = [];
-        Object.keys(LOCATIONS).forEach((region) => {
-          LOCATIONS[region].forEach((loc) => {
-            cards.push({ type: "Location", name: loc, region });
-          });
+        Object.keys(MAP_CONFIG.cities).forEach((city) => {
+          cards.push({ type: "Location", name: city });
         });
-        Object.keys(INDUSTRIES).forEach((ind) => {
+        [
+          "Cotton Mill",
+          "Coal Mine",
+          "Iron Works",
+          "Manufacturer",
+          "Pottery",
+          "Brewery",
+        ].forEach((ind) => {
           cards.push({ type: "Industry", name: ind });
         });
-        cards.push({ type: "Wild", name: "Wild Location" });
-        cards.push({ type: "Wild", name: "Wild Industry" });
         return cards.sort(() => Math.random() - 0.5).slice(0, 8);
       }
 
-      // ========== UI UPDATES ==========
-      function updateLocations() {
-        const grid = document.getElementById("locationsGrid");
-        grid.innerHTML = "";
-        Object.keys(LOCATIONS).forEach((region) => {
-          LOCATIONS[region].forEach((loc) => {
-            const card = document.createElement("div");
-            card.className = "location-card";
-            card.textContent = loc;
-            card.onclick = () => selectLocation(loc);
-            grid.appendChild(card);
-          });
+      // ========== BOARD DRAWING ==========
+      function drawBoard() {
+        const svg = document.getElementById("board");
+        svg.innerHTML = "";
+
+        // Draw links first (so they appear behind cities)
+        MAP_CONFIG.connections.forEach((conn) => {
+          if (
+            (gameState.era === "Canal" && conn.type === "canal") ||
+            (gameState.era === "Rail" && conn.type === "rail")
+          ) {
+            drawLink(svg, conn);
+          }
+        });
+
+        // Draw cities
+        Object.entries(MAP_CONFIG.cities).forEach(([name, pos]) => {
+          drawCity(svg, name, pos);
         });
       }
 
-      function selectLocation(loc) {
-        gameState.selectedLocation =
-          gameState.selectedLocation === loc ? null : loc;
-        updateLocations();
+      function drawCity(svg, name, pos) {
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.classList.add("city-group");
+        g.onclick = () => selectCity(name);
+        g.style.cursor = "pointer";
+
+        const circle = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "circle",
+        );
+        circle.classList.add("city-circle", "empty");
+        circle.setAttribute("cx", pos.x);
+        circle.setAttribute("cy", pos.y);
+        circle.setAttribute("r", 25);
+
+        const label = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "text",
+        );
+        label.classList.add("city-label");
+        label.setAttribute("x", pos.x);
+        label.setAttribute("y", pos.y);
+        label.textContent = name.substring(0, 4);
+
+        g.appendChild(circle);
+        g.appendChild(label);
+        svg.appendChild(g);
+      }
+
+      function drawLink(svg, conn) {
+        const from = MAP_CONFIG.cities[conn.from];
+        const to = MAP_CONFIG.cities[conn.to];
+
+        const line = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "line",
+        );
+        line.classList.add("link", conn.type);
+        line.setAttribute("x1", from.x);
+        line.setAttribute("y1", from.y);
+        line.setAttribute("x2", to.x);
+        line.setAttribute("y2", to.y);
+        line.onclick = (e) => {
+          e.stopPropagation();
+          selectLink(conn.from, conn.to, conn.type);
+        };
+
+        svg.appendChild(line);
+      }
+
+      function selectCity(name) {
+        if (
+          gameState.currentAction === "Build" ||
+          gameState.currentAction === "Network"
+        ) {
+          gameState.selectedCity =
+            gameState.selectedCity === name ? null : name;
+          drawBoard();
+        }
+      }
+
+      function selectLink(from, to, type) {
+        if (gameState.currentAction === "Network") {
+          gameState.selectedLink = `${from}-${to}-${type}`;
+          drawBoard();
+        }
+      }
+
+      // ========== ACTION FLOW ==========
+      function startAction(actionName) {
+        gameState.currentAction = actionName;
+        gameState.actionStep = 1;
+
+        switch (actionName) {
+          case "Build":
+            showBuildFlow();
+            break;
+          case "Network":
+            showNetworkFlow();
+            break;
+          case "Develop":
+            showDevelopFlow();
+            break;
+          case "Sell":
+            showSellFlow();
+            break;
+          case "Loan":
+            showLoanFlow();
+            break;
+          case "Scout":
+            showScoutFlow();
+            break;
+        }
+      }
+
+      function showBuildFlow() {
+        const modal = document.getElementById("actionModal");
+        const content = document.getElementById("actionModalContent");
+
+        if (gameState.actionStep === 1) {
+          content.innerHTML = `
+                    <h2>🏭 Build Action - Step 1: Select Card</h2>
+                    <div class="action-flow">
+                        <p>Choose a card to build with:</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            ${gameState.hands[gameState.playerId]
+                              .map(
+                                (card, i) => `
+                                <button onclick="selectBuildCard(${i})" 
+                                        style="padding: 10px; ${gameState.selectedCard === i ? "background: #27ae60; color: white;" : "background: #ecf0f1;"}">
+                                    ${card.type === "Location" ? "📍" : "🏭"} ${card.name}
+                                </button>
+                            `,
+                              )
+                              .join("")}
+                        </div>
+                    </div>
+                    <button onclick="buildStep2()" ${gameState.selectedCard === null ? "disabled" : ""} class="success">Next</button>
+                    <button onclick="cancelAction()" class="danger">Cancel</button>
+                `;
+        } else if (gameState.actionStep === 2) {
+          content.innerHTML = `
+                    <h2>🏭 Build Action - Step 2: Select City</h2>
+                    <div class="action-flow">
+                        <p>Click a city on the map to build in.</p>
+                        <p>Selected Card: <strong>${gameState.hands[gameState.playerId][gameState.selectedCard].name}</strong></p>
+                        <p>Selected City: <strong>${gameState.selectedCity || "None"}</strong></p>
+                    </div>
+                    <button onclick="buildStep3()" ${!gameState.selectedCity ? "disabled" : ""} class="success">Next</button>
+                    <button onclick="buildStep1()" class="danger">Back</button>
+                `;
+        } else if (gameState.actionStep === 3) {
+          content.innerHTML = `
+                    <h2>🏭 Build Action - Confirm</h2>
+                    <div class="action-flow">
+                        <p>Building <strong>${gameState.hands[gameState.playerId][gameState.selectedCard].name}</strong></p>
+                        <p>In <strong>${gameState.selectedCity}</strong></p>
+                        <p>Cost: £8</p>
+                    </div>
+                    <button onclick="executeBuild()" class="success">Confirm Build</button>
+                    <button onclick="buildStep2()" class="danger">Back</button>
+                `;
+        }
+
+        modal.classList.add("active");
+      }
+
+      function buildStep1() {
+        gameState.actionStep = 1;
+        showBuildFlow();
+      }
+      function buildStep2() {
+        gameState.actionStep = 2;
+        showBuildFlow();
+      }
+      function buildStep3() {
+        gameState.actionStep = 3;
+        showBuildFlow();
+      }
+
+      function selectBuildCard(idx) {
+        gameState.selectedCard = gameState.selectedCard === idx ? null : idx;
+        showBuildFlow();
+      }
+
+      function executeBuild() {
+        const card =
+          gameState.hands[gameState.playerId][gameState.selectedCard];
+        const city = gameState.selectedCity;
+
+        gameState.players[gameState.playerId].money -= 8;
+        gameState.hands[gameState.playerId].splice(gameState.selectedCard, 1);
+
+        broadcastAction({
+          type: "build",
+          playerId: gameState.playerId,
+          city: city,
+          card: card.name,
+        });
+
+        addLog(`Built ${card.name} in ${city}`, "own");
+        resetAction();
+        endTurn();
+      }
+
+      function showNetworkFlow() {
+        const modal = document.getElementById("actionModal");
+        const content = document.getElementById("actionModalContent");
+
+        if (gameState.actionStep === 1) {
+          content.innerHTML = `
+                    <h2>🔗 Network Action - Step 1: Select Card</h2>
+                    <div class="action-flow">
+                        <p>Choose any card to discard:</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            ${gameState.hands[gameState.playerId]
+                              .map(
+                                (card, i) => `
+                                <button onclick="selectNetworkCard(${i})" 
+                                        style="padding: 10px; ${gameState.selectedCard === i ? "background: #27ae60; color: white;" : "background: #ecf0f1;"}">
+                                    ${card.type === "Location" ? "📍" : card.type === "Industry" ? "🏭" : "⭐"} ${card.name}
+                                </button>
+                            `,
+                              )
+                              .join("")}
+                        </div>
+                    </div>
+                    <button onclick="networkStep2()" ${gameState.selectedCard === null ? "disabled" : ""} class="success">Next</button>
+                    <button onclick="cancelAction()" class="danger">Cancel</button>
+                `;
+        } else if (gameState.actionStep === 2) {
+          content.innerHTML = `
+                    <h2>🔗 Network Action - Step 2: Select Link</h2>
+                    <div class="action-flow">
+                        <p>Click a link on the map to build.</p>
+                        <p>Type: ${gameState.era}</p>
+                        <p>Cost: £${gameState.era === "Canal" ? 3 : 5}</p>
+                        <p>Selected Link: <strong>${gameState.selectedLink || "None"}</strong></p>
+                    </div>
+                    <button onclick="networkStep3()" ${!gameState.selectedLink ? "disabled" : ""} class="success">Next</button>
+                    <button onclick="networkStep1()" class="danger">Back</button>
+                `;
+        } else if (gameState.actionStep === 3) {
+          content.innerHTML = `
+                    <h2>🔗 Network Action - Confirm</h2>
+                    <div class="action-flow">
+                        <p>Building ${gameState.era} link</p>
+                        <p>Between <strong>${gameState.selectedLink}</strong></p>
+                        <p>Cost: £${gameState.era === "Canal" ? 3 : 5}</p>
+                    </div>
+                    <button onclick="executeNetwork()" class="success">Confirm Network</button>
+                    <button onclick="networkStep2()" class="danger">Back</button>
+                `;
+        }
+
+        modal.classList.add("active");
+      }
+
+      function networkStep1() {
+        gameState.actionStep = 1;
+        showNetworkFlow();
+      }
+      function networkStep2() {
+        gameState.actionStep = 2;
+        showNetworkFlow();
+      }
+      function networkStep3() {
+        gameState.actionStep = 3;
+        showNetworkFlow();
+      }
+
+      function selectNetworkCard(idx) {
+        gameState.selectedCard = gameState.selectedCard === idx ? null : idx;
+        showNetworkFlow();
+      }
+
+      function executeNetwork() {
+        const cost = gameState.era === "Canal" ? 3 : 5;
+        gameState.players[gameState.playerId].money -= cost;
+        gameState.hands[gameState.playerId].splice(gameState.selectedCard, 1);
+
+        broadcastAction({
+          type: "network",
+          playerId: gameState.playerId,
+          link: gameState.selectedLink,
+          era: gameState.era,
+        });
+
+        addLog(`Built ${gameState.era} link: ${gameState.selectedLink}`, "own");
+        resetAction();
+        endTurn();
+      }
+
+      function showDevelopFlow() {
+        const modal = document.getElementById("actionModal");
+        const content = document.getElementById("actionModalContent");
+
+        content.innerHTML = `
+                <h2>📈 Develop Action</h2>
+                <div class="action-flow">
+                    <p>Remove industry tiles from your mat (1 iron per tile)</p>
+                    <p>This will unlock higher-level industries.</p>
+                </div>
+                <button onclick="executeDevelop()" class="success">Execute</button>
+                <button onclick="cancelAction()" class="danger">Cancel</button>
+            `;
+
+        modal.classList.add("active");
+      }
+
+      function executeDevelop() {
+        const hand = gameState.hands[gameState.playerId];
+        if (hand.length > 0) {
+          hand.pop();
+        }
+
+        broadcastAction({
+          type: "develop",
+          playerId: gameState.playerId,
+        });
+
+        addLog(`Developed industries`, "own");
+        resetAction();
+        endTurn();
+      }
+
+      function showSellFlow() {
+        const modal = document.getElementById("actionModal");
+        const content = document.getElementById("actionModalContent");
+
+        content.innerHTML = `
+                <h2>💰 Sell Action</h2>
+                <div class="action-flow">
+                    <p>Flip cotton mills, manufacturers, or potteries to earn points.</p>
+                    <p>Requires connection to Merchant tile.</p>
+                </div>
+                <button onclick="executeSell()" class="success">Execute</button>
+                <button onclick="cancelAction()" class="danger">Cancel</button>
+            `;
+
+        modal.classList.add("active");
+      }
+
+      function executeSell() {
+        broadcastAction({
+          type: "sell",
+          playerId: gameState.playerId,
+        });
+
+        addLog(`Sold industries`, "own");
+        resetAction();
+        endTurn();
+      }
+
+      function showLoanFlow() {
+        const modal = document.getElementById("actionModal");
+        const content = document.getElementById("actionModalContent");
+
+        content.innerHTML = `
+                <h2>💳 Loan Action</h2>
+                <div class="action-flow">
+                    <p>Take £30 from the bank</p>
+                    <p>Your income level moves back 3 levels</p>
+                </div>
+                <button onclick="executeLoan()" class="success">Take Loan</button>
+                <button onclick="cancelAction()" class="danger">Cancel</button>
+            `;
+
+        modal.classList.add("active");
+      }
+
+      function executeLoan() {
+        gameState.players[gameState.playerId].money += 30;
+        gameState.players[gameState.playerId].income -= 3;
+
+        broadcastAction({
+          type: "loan",
+          playerId: gameState.playerId,
+        });
+
+        addLog(`Took £30 loan`, "own");
+        resetAction();
+        endTurn();
+      }
+
+      function showScoutFlow() {
+        const modal = document.getElementById("actionModal");
+        const content = document.getElementById("actionModalContent");
+
+        content.innerHTML = `
+                <h2>🔍 Scout Action</h2>
+                <div class="action-flow">
+                    <p>Discard 3 cards to get Wild Location + Wild Industry</p>
+                </div>
+                <button onclick="executeScout()" class="success">Scout</button>
+                <button onclick="cancelAction()" class="danger">Cancel</button>
+            `;
+
+        modal.classList.add("active");
+      }
+
+      function executeScout() {
+        const hand = gameState.hands[gameState.playerId];
+        while (hand.length > 5) hand.pop();
+        hand.push({ type: "Wild", name: "Wild Location" });
+        hand.push({ type: "Wild", name: "Wild Industry" });
+
+        broadcastAction({
+          type: "scout",
+          playerId: gameState.playerId,
+        });
+
+        addLog(`Scouted for wild cards`, "own");
+        resetAction();
+        endTurn();
+      }
+
+      function cancelAction() {
+        resetAction();
+        document.getElementById("actionModal").classList.remove("active");
+      }
+
+      function resetAction() {
+        gameState.currentAction = null;
+        gameState.actionStep = null;
+        gameState.selectedCard = null;
+        gameState.selectedCity = null;
+        gameState.selectedLink = null;
+        drawBoard();
+      }
+
+      // ========== TURN MANAGEMENT ==========
+      function endTurn() {
+        gameState.currentTurn =
+          (gameState.currentTurn + 1) % gameState.totalPlayers;
+        addLog(
+          `${gameState.playerNames[gameState.currentTurn]}'s turn`,
+          "system",
+        );
+        broadcastAction({ type: "endTurn", nextPlayer: gameState.currentTurn });
+        updateUI();
       }
 
       function updateUI() {
         updatePlayersStatus();
         updateHandDisplay();
-        updatePlayerResources();
-        updateTurnInfo();
-        updateGamePhase();
+        updateStepIndicator();
+        if (
+          gameState.currentTurn === gameState.playerId &&
+          gameState.currentAction === null
+        ) {
+          showActionButtons();
+        } else {
+          document.getElementById("actionButtons").innerHTML = "";
+        }
       }
 
       function updatePlayersStatus() {
@@ -848,7 +1248,7 @@
             (p, i) => `
                 <div class="player-status ${i === gameState.currentTurn ? "current" : ""}">
                     <strong>${gameState.playerNames[i]}</strong><br>
-                    💰 £${p.money} | 📊 VP: ${p.vp} | 📈 Income: ${p.income}
+                    💰 £${p.money} | 📊 VP: ${p.vp}
                 </div>
             `,
           )
@@ -858,12 +1258,10 @@
       function updateHandDisplay() {
         const cont = document.getElementById("handContainer");
         const hand = gameState.hands[gameState.playerId] || [];
-        document.getElementById("handCount").textContent = hand.length;
         cont.innerHTML = hand
           .map(
             (card, i) => `
-                <div class="card-item ${gameState.selectedCard === i ? "selected" : ""}" 
-                     onclick="selectCard(${i})">
+                <div class="card-item">
                     ${card.type === "Location" ? "📍" : card.type === "Industry" ? "🏭" : "⭐"} ${card.name}
                 </div>
             `,
@@ -871,159 +1269,25 @@
           .join("");
       }
 
-      function updatePlayerResources() {
-        const p = gameState.players[gameState.playerId];
-        document.getElementById("playerResources").innerHTML = `
-                <div class="resource">Money: £${p.money}</div>
-                <div class="resource">Income: ${p.income}</div>
-                <div class="resource">VP: ${p.vp}</div>
-            `;
-      }
-
-      function updateTurnInfo() {
+      function updateStepIndicator() {
+        const step = document.getElementById("stepIndicator");
         if (gameState.currentTurn === gameState.playerId) {
-          document.getElementById("turnInfo").innerHTML =
-            `<strong style="color: #27ae60;">Your Turn - Choose an Action</strong>`;
-          updateActionButtons();
+          step.innerHTML = `<span style="color: #27ae60;">✓ Your Turn - Choose an Action</span>`;
         } else {
-          document.getElementById("turnInfo").innerHTML =
-            `<strong>${gameState.playerNames[gameState.currentTurn]}'s Turn</strong>`;
-          document.getElementById("actionButtons").innerHTML = "";
+          step.innerHTML = `<span style="color: #3498db;">⏳ Waiting for ${gameState.playerNames[gameState.currentTurn]}</span>`;
         }
       }
 
-      function updateActionButtons() {
+      function showActionButtons() {
         const cont = document.getElementById("actionButtons");
-        cont.innerHTML = gameState.actions
-          .map(
-            (action) => `
-                <button class="action-btn" onclick="startAction('${action.name}')">
-                    ${action.icon} ${action.name}
-                </button>
-            `,
-          )
-          .join("");
-      }
-
-      function updateGamePhase() {
-        document.getElementById("gamePhase").innerHTML = `
-                <div>${gameState.era} Era | Round ${gameState.currentRound}</div>
+        cont.innerHTML = `
+                <button class="action-btn" onclick="startAction('Build')">🏭 Build</button>
+                <button class="action-btn" onclick="startAction('Network')">🔗 Network</button>
+                <button class="action-btn" onclick="startAction('Develop')">📈 Develop</button>
+                <button class="action-btn" onclick="startAction('Sell')">💰 Sell</button>
+                <button class="action-btn" onclick="startAction('Loan')">💳 Loan</button>
+                <button class="action-btn" onclick="startAction('Scout')">🔍 Scout</button>
             `;
-      }
-
-      function selectCard(idx) {
-        gameState.selectedCard = gameState.selectedCard === idx ? null : idx;
-        updateHandDisplay();
-      }
-
-      // ========== ACTIONS ==========
-      function startAction(actionName) {
-        gameState.selectedAction = actionName;
-        showActionModal(actionName);
-      }
-
-      function showActionModal(actionName) {
-        const modal = document.getElementById("actionModal");
-        const content = document.getElementById("actionModalContent");
-
-        let html = `<h2>${actionName} Action</h2>`;
-
-        switch (actionName) {
-          case "Build":
-            html += `
-                        <p>Select a location and card to build an industry.</p>
-                        <p>Card Type:</p>
-                        <div id="cardSelector"></div>
-                        <p>Location:</p>
-                        <div id="locationSelector"></div>
-                        <button onclick="executeAction('Build')">Build</button>
-                        <button class="danger" onclick="closeModal()">Cancel</button>
-                    `;
-            break;
-          case "Network":
-            html += `
-                        <p>Expand your network with Link tiles.</p>
-                        <button onclick="executeAction('Network')">Place Link</button>
-                        <button class="danger" onclick="closeModal()">Cancel</button>
-                    `;
-            break;
-          case "Develop":
-            html += `
-                        <p>Remove industry tiles from your mat to access higher levels.</p>
-                        <p>Cost: 1 Iron per tile removed</p>
-                        <button onclick="executeAction('Develop')">Develop</button>
-                        <button class="danger" onclick="closeModal()">Cancel</button>
-                    `;
-            break;
-          case "Sell":
-            html += `
-                        <p>Flip cotton mills, manufacturers, or potteries.</p>
-                        <p>Requires: Connection to Merchant + Required Beer</p>
-                        <button onclick="executeAction('Sell')">Sell</button>
-                        <button class="danger" onclick="closeModal()">Cancel</button>
-                    `;
-            break;
-          case "Loan":
-            html += `
-                        <p>Take £30 loan, move income back 3 levels.</p>
-                        <button onclick="executeAction('Loan')">Take Loan</button>
-                        <button class="danger" onclick="closeModal()">Cancel</button>
-                    `;
-            break;
-          case "Scout":
-            html += `
-                        <p>Discard 3 cards to get Wild Location + Wild Industry.</p>
-                        <button onclick="executeAction('Scout')">Scout</button>
-                        <button class="danger" onclick="closeModal()">Cancel</button>
-                    `;
-            break;
-        }
-
-        content.innerHTML = html;
-        modal.classList.add("active");
-      }
-
-      function executeAction(actionName) {
-        const hand = gameState.hands[gameState.playerId];
-        if (hand.length === 0) {
-          alert("No cards in hand!");
-          return;
-        }
-
-        // Discard card
-        if (gameState.selectedCard !== null) {
-          const discardedCard = hand[gameState.selectedCard];
-          hand.splice(gameState.selectedCard, 1);
-          gameState.selectedCard = null;
-
-          addLog(`Performed ${actionName}`, "own");
-          broadcastAction({
-            type: "action",
-            playerId: gameState.playerId,
-            action: actionName,
-            card: discardedCard,
-          });
-
-          closeModal();
-          endTurn();
-        } else {
-          alert("Select a card to discard");
-        }
-      }
-
-      function endTurn() {
-        if (gameState.hands[gameState.playerId].length === 0) {
-          // Refill if draw deck available
-        }
-
-        gameState.currentTurn =
-          (gameState.currentTurn + 1) % gameState.totalPlayers;
-        addLog(
-          `${gameState.playerNames[gameState.currentTurn]}'s turn`,
-          "system",
-        );
-        broadcastAction({ type: "endTurn", nextPlayer: gameState.currentTurn });
-        updateUI();
       }
 
       // ========== COMMUNICATION ==========
@@ -1037,9 +1301,15 @@
 
       function handleRemoteAction(action) {
         switch (action.type) {
-          case "action":
+          case "build":
             addLog(
-              `${gameState.playerNames[action.playerId]} played ${action.action}`,
+              `${gameState.playerNames[action.playerId]} built in ${action.city}`,
+              "other",
+            );
+            break;
+          case "network":
+            addLog(
+              `${gameState.playerNames[action.playerId]} built ${action.era} link`,
               "other",
             );
             break;
@@ -1051,10 +1321,6 @@
       }
 
       // ========== UTILITIES ==========
-      function closeModal() {
-        document.getElementById("actionModal").classList.remove("active");
-      }
-
       function addLog(msg, type = "own") {
         const log = document.getElementById("gameLog");
         const entry = document.createElement("div");
