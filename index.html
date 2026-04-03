@@ -35,7 +35,7 @@
       }
       .setup-row {
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 20px;
         margin-bottom: 15px;
       }
@@ -48,21 +48,22 @@
       .setup-box h3 {
         margin-top: 0;
         color: #2c3e50;
+        font-size: 14px;
       }
       .setup-box textarea {
         width: 100%;
-        height: 80px;
+        height: 60px;
         padding: 8px;
         border: 1px solid #ddd;
         border-radius: 3px;
         font-family: monospace;
-        font-size: 11px;
+        font-size: 10px;
         resize: vertical;
       }
       .setup-box button {
         background: #3498db;
         color: white;
-        padding: 8px 15px;
+        padding: 8px 12px;
         border: none;
         border-radius: 3px;
         cursor: pointer;
@@ -71,6 +72,13 @@
       }
       .setup-box button:hover {
         background: #2980b9;
+      }
+      .setup-box input {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        width: 100%;
+        margin: 5px 0;
       }
       .status {
         padding: 10px;
@@ -226,6 +234,12 @@
       .city-circle.player2 {
         fill: #e74c3c;
       }
+      .city-circle.player3 {
+        fill: #f39c12;
+      }
+      .city-circle.player4 {
+        fill: #9b59b6;
+      }
       .city-circle.empty {
         fill: #ecf0f1;
       }
@@ -237,6 +251,35 @@
       .setup-hidden {
         display: none;
       }
+      .mode-selector {
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        margin-bottom: 15px;
+      }
+      .mode-selector h3 {
+        margin-top: 0;
+        color: #2c3e50;
+      }
+      .mode-buttons {
+        display: flex;
+        gap: 10px;
+      }
+      .mode-buttons button {
+        background: #3498db;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+      .mode-buttons button:hover {
+        background: #2980b9;
+      }
+      .mode-buttons button.active {
+        background: #27ae60;
+      }
     </style>
   </head>
   <body>
@@ -247,54 +290,22 @@
 
       <!-- CONNECTION SETUP -->
       <div class="connection-setup" id="setupArea">
+        <div class="mode-selector">
+          <h3>Game Mode</h3>
+          <div class="mode-buttons">
+            <button class="active" onclick="setMode(2)">2 Players</button>
+            <button onclick="setMode(3)">3 Players</button>
+            <button onclick="setMode(4)">4 Players</button>
+          </div>
+          <p
+            id="modeInfo"
+            style="margin-top: 10px; font-size: 12px; color: #555"
+          ></p>
+        </div>
+
         <div id="status" class="status disconnected">Status: Disconnected</div>
 
-        <div class="setup-row">
-          <div class="setup-box">
-            <h3>👤 Player 1 - Create Offer</h3>
-            <button onclick="createOffer()">Step 1: Generate Offer</button>
-            <label style="font-size: 12px; display: block; margin: 8px 0 4px 0"
-              >Share this with Player 2:</label
-            >
-            <textarea id="offerOutput" readonly></textarea>
-            <button
-              onclick="copyToClipboard('offerOutput')"
-              style="background: #27ae60"
-            >
-              Copy
-            </button>
-          </div>
-
-          <div class="setup-box">
-            <h3>👥 Player 2 - Create Answer</h3>
-            <label style="font-size: 12px; display: block; margin: 0 0 4px 0"
-              >Paste offer from Player 1:</label
-            >
-            <textarea id="offerInput" placeholder="Paste offer..."></textarea>
-            <button onclick="createAnswer()">Step 2: Generate Answer</button>
-            <label style="font-size: 12px; display: block; margin: 8px 0 4px 0"
-              >Share this with Player 1:</label
-            >
-            <textarea id="answerOutput" readonly></textarea>
-            <button
-              onclick="copyToClipboard('answerOutput')"
-              style="background: #27ae60"
-            >
-              Copy
-            </button>
-          </div>
-
-          <div class="setup-box">
-            <h3>👤 Player 1 - Connect</h3>
-            <label style="font-size: 12px; display: block; margin: 0 0 4px 0"
-              >Paste answer from Player 2:</label
-            >
-            <textarea id="answerInput" placeholder="Paste answer..."></textarea>
-            <button onclick="consumeAnswer()">
-              Step 3: Complete Connection
-            </button>
-          </div>
-        </div>
+        <div id="setupBoxes" class="setup-row"></div>
       </div>
 
       <!-- GAME AREA -->
@@ -337,20 +348,17 @@
 
     <script>
       // ========== GAME STATE ==========
+      let gameMode = 2;
       const gameState = {
         playerId: null,
-        playerNames: ["Player 1", "Player 2"],
-        players: [
-          { money: 30, score: 0, networks: { rail: {}, canal: {} } },
-          { money: 30, score: 0, networks: { rail: {}, canal: {} } },
-        ],
+        totalPlayers: 2,
+        playerNames: [],
+        players: [],
         currentTurn: 0,
-        hands: [
-          ["Iron", "Coal", "Pottery", "Brewery"],
-          ["Iron", "Coal", "Pottery", "Brewery"],
-        ],
+        hands: [],
         selectedCard: null,
         gameActive: false,
+        connections: {}, // peer connections indexed by player id
       };
 
       const cities = {
@@ -372,9 +380,150 @@
         ],
       };
 
-      let peerConnection = null;
-      let dataChannel = null;
-      let isInitiator = false;
+      let dataChannels = {}; // indexed by player id
+
+      // ========== MODE SELECTION ==========
+      function setMode(mode) {
+        gameMode = mode;
+        gameState.totalPlayers = mode;
+
+        // Update button states
+        document.querySelectorAll(".mode-buttons button").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        event.target.classList.add("active");
+
+        // Update info text
+        const modeInfo = document.getElementById("modeInfo");
+        modeInfo.textContent = `${mode} player${mode > 1 ? "s" : ""} - Everyone connects to everyone`;
+
+        // Regenerate setup boxes
+        generateSetupBoxes(mode);
+      }
+
+      function generateSetupBoxes(playerCount) {
+        const container = document.getElementById("setupBoxes");
+        container.innerHTML = "";
+
+        if (playerCount === 2) {
+          container.innerHTML = `
+                    <div class="setup-box">
+                        <h3>👤 Player 1 - Create Offer</h3>
+                        <input type="text" placeholder="Your name" id="p1Name" value="Player 1">
+                        <button onclick="createOffer(0)">Step 1: Generate Offer</button>
+                        <label style="font-size: 12px; display: block; margin: 8px 0 4px 0;">Share with Player 2:</label>
+                        <textarea id="offerOutput_0" readonly></textarea>
+                        <button onclick="copyToClipboard('offerOutput_0')" style="background: #27ae60;">Copy</button>
+                    </div>
+
+                    <div class="setup-box">
+                        <h3>👥 Player 2 - Create Answer</h3>
+                        <input type="text" placeholder="Your name" id="p2Name" value="Player 2">
+                        <label style="font-size: 12px; display: block; margin: 0 0 4px 0;">Paste offer:</label>
+                        <textarea id="offerInput_0" placeholder="Paste offer..."></textarea>
+                        <button onclick="createAnswer(0)">Step 2: Generate Answer</button>
+                        <label style="font-size: 12px; display: block; margin: 8px 0 4px 0;">Share with Player 1:</label>
+                        <textarea id="answerOutput_0" readonly></textarea>
+                        <button onclick="copyToClipboard('answerOutput_0')" style="background: #27ae60;">Copy</button>
+                    </div>
+
+                    <div class="setup-box">
+                        <h3>👤 Player 1 - Connect</h3>
+                        <label style="font-size: 12px; display: block; margin: 0 0 4px 0;">Paste answer:</label>
+                        <textarea id="answerInput_0" placeholder="Paste answer..."></textarea>
+                        <button onclick="consumeAnswer(0)">Step 3: Complete Connection</button>
+                    </div>
+                `;
+        } else if (playerCount === 3) {
+          container.innerHTML = `
+                    <div class="setup-box">
+                        <h3>👤 Player 1</h3>
+                        <input type="text" placeholder="Your name" id="p1Name" value="Player 1">
+                        <button onclick="createOffer(0)">Step 1a: Generate Offer (to P2)</button>
+                        <textarea id="offerOutput_0" readonly></textarea>
+                        <button onclick="copyToClipboard('offerOutput_0')" style="background: #27ae60; font-size: 11px;">Copy</button>
+                        <button onclick="createOffer(1)" style="margin-top: 10px;">Step 1b: Generate Offer (to P3)</button>
+                        <textarea id="offerOutput_1" readonly></textarea>
+                        <button onclick="copyToClipboard('offerOutput_1')" style="background: #27ae60; font-size: 11px;">Copy</button>
+                        <label style="font-size: 12px; display: block; margin: 10px 0 4px 0;">Paste answers:</label>
+                        <textarea id="answerInput_0" placeholder="Answer from P2..." style="height: 40px; margin-bottom: 5px;"></textarea>
+                        <textarea id="answerInput_1" placeholder="Answer from P3..." style="height: 40px; margin-bottom: 5px;"></textarea>
+                        <button onclick="consumeAnswer(0); consumeAnswer(1);">Step 3: Complete Connections</button>
+                    </div>
+
+                    <div class="setup-box">
+                        <h3>👥 Player 2</h3>
+                        <input type="text" placeholder="Your name" id="p2Name" value="Player 2">
+                        <label style="font-size: 12px; display: block; margin: 0 0 4px 0;">Paste offer from P1:</label>
+                        <textarea id="offerInput_0" placeholder="Paste offer..."></textarea>
+                        <button onclick="createAnswer(0)">Step 2: Generate Answer</button>
+                        <textarea id="answerOutput_0" readonly></textarea>
+                        <button onclick="copyToClipboard('answerOutput_0')" style="background: #27ae60; font-size: 11px;">Copy to P1</button>
+                    </div>
+
+                    <div class="setup-box">
+                        <h3>👥 Player 3</h3>
+                        <input type="text" placeholder="Your name" id="p3Name" value="Player 3">
+                        <label style="font-size: 12px; display: block; margin: 0 0 4px 0;">Paste offer from P1:</label>
+                        <textarea id="offerInput_1" placeholder="Paste offer..."></textarea>
+                        <button onclick="createAnswer(1)">Step 2: Generate Answer</button>
+                        <textarea id="answerOutput_1" readonly></textarea>
+                        <button onclick="copyToClipboard('answerOutput_1')" style="background: #27ae60; font-size: 11px;">Copy to P1</button>
+                    </div>
+                `;
+        } else if (playerCount === 4) {
+          container.innerHTML = `
+                    <div class="setup-box">
+                        <h3>👤 Player 1</h3>
+                        <input type="text" placeholder="Your name" id="p1Name" value="Player 1">
+                        <button onclick="createOffer(0)" style="font-size: 11px;">Generate Offer (P2)</button>
+                        <textarea id="offerOutput_0" readonly></textarea>
+                        <button onclick="copyToClipboard('offerOutput_0')" style="background: #27ae60; font-size: 11px;">Copy</button>
+                        <button onclick="createOffer(1)" style="font-size: 11px; margin-top: 5px;">Generate Offer (P3)</button>
+                        <textarea id="offerOutput_1" readonly></textarea>
+                        <button onclick="copyToClipboard('offerOutput_1')" style="background: #27ae60; font-size: 11px;">Copy</button>
+                        <button onclick="createOffer(2)" style="font-size: 11px; margin-top: 5px;">Generate Offer (P4)</button>
+                        <textarea id="offerOutput_2" readonly></textarea>
+                        <button onclick="copyToClipboard('offerOutput_2')" style="background: #27ae60; font-size: 11px;">Copy</button>
+                        <label style="font-size: 12px; display: block; margin: 10px 0 4px 0;">Paste answers:</label>
+                        <textarea id="answerInput_0" placeholder="P2..." style="height: 30px; margin-bottom: 3px;"></textarea>
+                        <textarea id="answerInput_1" placeholder="P3..." style="height: 30px; margin-bottom: 3px;"></textarea>
+                        <textarea id="answerInput_2" placeholder="P4..." style="height: 30px;"></textarea>
+                        <button onclick="consumeAnswer(0); consumeAnswer(1); consumeAnswer(2);" style="font-size: 11px; margin-top: 5px;">Connect All</button>
+                    </div>
+
+                    <div class="setup-box">
+                        <h3>👥 Player 2</h3>
+                        <input type="text" placeholder="Your name" id="p2Name" value="Player 2">
+                        <label style="font-size: 12px;">Offer from P1:</label>
+                        <textarea id="offerInput_0" placeholder="Paste offer..."></textarea>
+                        <button onclick="createAnswer(0)" style="font-size: 11px;">Generate Answer</button>
+                        <textarea id="answerOutput_0" readonly></textarea>
+                        <button onclick="copyToClipboard('answerOutput_0')" style="background: #27ae60; font-size: 11px;">Copy</button>
+                    </div>
+
+                    <div class="setup-box">
+                        <h3>👥 Player 3</h3>
+                        <input type="text" placeholder="Your name" id="p3Name" value="Player 3">
+                        <label style="font-size: 12px;">Offer from P1:</label>
+                        <textarea id="offerInput_1" placeholder="Paste offer..."></textarea>
+                        <button onclick="createAnswer(1)" style="font-size: 11px;">Generate Answer</button>
+                        <textarea id="answerOutput_1" readonly></textarea>
+                        <button onclick="copyToClipboard('answerOutput_1')" style="background: #27ae60; font-size: 11px;">Copy</button>
+                    </div>
+
+                    <div class="setup-box">
+                        <h3>👥 Player 4</h3>
+                        <input type="text" placeholder="Your name" id="p4Name" value="Player 4">
+                        <label style="font-size: 12px;">Offer from P1:</label>
+                        <textarea id="offerInput_2" placeholder="Paste offer..."></textarea>
+                        <button onclick="createAnswer(2)" style="font-size: 11px;">Generate Answer</button>
+                        <textarea id="answerOutput_2" readonly></textarea>
+                        <button onclick="copyToClipboard('answerOutput_2')" style="background: #27ae60; font-size: 11px;">Copy</button>
+                    </div>
+                `;
+        }
+      }
 
       // ========== CONNECTION FUNCTIONS ==========
       function updateStatus(message, type) {
@@ -390,26 +539,34 @@
         alert("Copied to clipboard!");
       }
 
-      async function createOffer() {
+      async function createOffer(peerId) {
         try {
-          isInitiator = true;
           gameState.playerId = 0;
-          peerConnection = new RTCPeerConnection({
-            iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
-          });
+          gameState.totalPlayers = gameMode;
+          gameState.playerNames = [
+            document.getElementById("p1Name").value || "Player 1",
+            document.getElementById("p2Name").value || "Player 2",
+            document.getElementById("p3Name")?.value || "Player 3",
+            document.getElementById("p4Name")?.value || "Player 4",
+          ].slice(0, gameMode);
 
-          dataChannel = peerConnection.createDataChannel("brass");
-          setupDataChannel();
+          if (!gameState.connections[peerId]) {
+            gameState.connections[peerId] = new RTCPeerConnection({
+              iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
+            });
+          }
+
+          const peerConnection = gameState.connections[peerId];
+          const dc = peerConnection.createDataChannel("brass");
+          dataChannels[peerId] = dc;
+          setupDataChannel(peerId);
 
           peerConnection.onicecandidate = (event) => {
             if (event.candidate === null) {
               const offer = peerConnection.localDescription;
-              document.getElementById("offerOutput").value = JSON.stringify(
-                offer,
-                null,
-                2,
-              );
-              updateStatus("Offer created. Share with Player 2.", "waiting");
+              document.getElementById(`offerOutput_${peerId}`).value =
+                JSON.stringify(offer, null, 2);
+              updateStatus(`Offer created for peer ${peerId + 1}`, "waiting");
             }
           };
 
@@ -421,34 +578,47 @@
         }
       }
 
-      async function createAnswer() {
+      async function createAnswer(peerId) {
         try {
-          const offerText = document.getElementById("offerInput").value;
+          if (!gameState.playerNames[0]) {
+            gameState.playerNames = [
+              document.getElementById("p1Name")?.value || "Player 1",
+              document.getElementById("p2Name")?.value || "Player 2",
+              document.getElementById("p3Name")?.value || "Player 3",
+              document.getElementById("p4Name")?.value || "Player 4",
+            ].slice(0, gameMode);
+          }
+
+          gameState.playerId = peerId + 1;
+          gameState.totalPlayers = gameMode;
+
+          const offerText = document.getElementById(
+            `offerInput_${peerId}`,
+          ).value;
           if (!offerText.trim()) {
             alert("Please paste the offer first");
             return;
           }
 
-          isInitiator = false;
-          gameState.playerId = 1;
-          peerConnection = new RTCPeerConnection({
-            iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
-          });
+          if (!gameState.connections[peerId]) {
+            gameState.connections[peerId] = new RTCPeerConnection({
+              iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
+            });
+          }
+
+          const peerConnection = gameState.connections[peerId];
 
           peerConnection.ondatachannel = (event) => {
-            dataChannel = event.channel;
-            setupDataChannel();
+            dataChannels[peerId] = event.channel;
+            setupDataChannel(peerId);
           };
 
           peerConnection.onicecandidate = (event) => {
             if (event.candidate === null) {
               const answer = peerConnection.localDescription;
-              document.getElementById("answerOutput").value = JSON.stringify(
-                answer,
-                null,
-                2,
-              );
-              updateStatus("Answer created. Share with Player 1.", "waiting");
+              document.getElementById(`answerOutput_${peerId}`).value =
+                JSON.stringify(answer, null, 2);
+              updateStatus(`Answer created for peer ${peerId}`, "waiting");
             }
           };
 
@@ -465,11 +635,19 @@
         }
       }
 
-      async function consumeAnswer() {
+      async function consumeAnswer(peerId) {
         try {
-          const answerText = document.getElementById("answerInput").value;
+          const answerText = document.getElementById(
+            `answerInput_${peerId}`,
+          ).value;
           if (!answerText.trim()) {
-            alert("Please paste the answer first");
+            alert(`Please paste the answer for peer ${peerId + 1} first`);
+            return;
+          }
+
+          const peerConnection = gameState.connections[peerId];
+          if (!peerConnection) {
+            alert("Create an offer first");
             return;
           }
 
@@ -477,42 +655,90 @@
           await peerConnection.setRemoteDescription(
             new RTCSessionDescription(answer),
           );
-          updateStatus("Connection established!", "connected");
-          startGame();
+
+          // Check if all connections are ready
+          const allConnected = Object.values(dataChannels).every(
+            (dc) => dc && dc.readyState === "open",
+          );
+          if (allConnected) {
+            updateStatus("All connections established!", "connected");
+            startGame();
+          } else {
+            updateStatus(
+              "Connection established with peer " + (peerId + 1),
+              "waiting",
+            );
+          }
         } catch (error) {
           alert("Error consuming answer: " + error.message);
           updateStatus("Error consuming answer", "disconnected");
         }
       }
 
-      function setupDataChannel() {
-        dataChannel.onopen = () => {
-          updateStatus("Connected!", "connected");
-          addLog("Connection established!", "system");
+      function setupDataChannel(peerId) {
+        const dc = dataChannels[peerId];
+
+        dc.onopen = () => {
+          console.log(`Data channel with peer ${peerId} opened`);
+          // Check if all are ready
+          const allConnected = Object.values(dataChannels).every(
+            (dc) => dc && dc.readyState === "open",
+          );
+          if (allConnected) {
+            updateStatus("All connections established!", "connected");
+            // Small delay to ensure all peers are ready
+            setTimeout(startGame, 500);
+          }
         };
 
-        dataChannel.onmessage = (event) => {
+        dc.onmessage = (event) => {
           const message = JSON.parse(event.data);
           handleRemoteAction(message);
         };
 
-        dataChannel.onclose = () => {
-          updateStatus("Disconnected", "disconnected");
+        dc.onclose = () => {
+          console.log(`Data channel with peer ${peerId} closed`);
         };
 
-        dataChannel.onerror = (error) => {
-          console.error("Data channel error:", error);
+        dc.onerror = (error) => {
+          console.error(`Data channel error with peer ${peerId}:`, error);
         };
       }
 
       // ========== GAME FUNCTIONS ==========
       function startGame() {
+        // Initialize game state
+        gameState.players = Array(gameState.totalPlayers)
+          .fill(null)
+          .map(() => ({
+            money: 30,
+            score: 0,
+            networks: { rail: {}, canal: {} },
+          }));
+
+        gameState.hands = Array(gameState.totalPlayers)
+          .fill(null)
+          .map(() =>
+            ["Iron", "Coal", "Pottery", "Brewery"].sort(
+              () => Math.random() - 0.5,
+            ),
+          );
+
+        gameState.currentTurn = 0;
+        gameState.gameActive = true;
+
         document.getElementById("setupArea").classList.add("setup-hidden");
         document.getElementById("gameArea").classList.add("active");
-        gameState.gameActive = true;
-        addLog(`You are Player ${gameState.playerId + 1}`, "system");
+
+        addLog(
+          `You are ${gameState.playerNames[gameState.playerId]}`,
+          "system",
+        );
         drawBoard();
         updateUI();
+
+        // Broadcast game start to all peers
+        broadcastAction({ type: "gameStart", playerId: gameState.playerId });
       }
 
       function drawBoard() {
@@ -521,12 +747,14 @@
 
         // Draw Rail Network
         svg.innerHTML += `<text x="150" y="30" class="network-title">Rail Network</text>`;
-        cities.rail.forEach((city, idx) => {
-          const owner = gameState.players[0].networks.rail[city.name]
-            ? 0
-            : gameState.players[1].networks.rail[city.name]
-              ? 1
-              : -1;
+        cities.rail.forEach((city) => {
+          let owner = -1;
+          for (let i = 0; i < gameState.totalPlayers; i++) {
+            if (gameState.players[i].networks.rail[city.name]) {
+              owner = i;
+              break;
+            }
+          }
           const ownerClass = owner === -1 ? "empty" : `player${owner + 1}`;
           svg.innerHTML += `
                     <circle class="city-circle ${ownerClass}" 
@@ -538,12 +766,14 @@
 
         // Draw Canal Network
         svg.innerHTML += `<text x="450" y="30" class="network-title">Canal Network</text>`;
-        cities.canal.forEach((city, idx) => {
-          const owner = gameState.players[0].networks.canal[city.name]
-            ? 0
-            : gameState.players[1].networks.canal[city.name]
-              ? 1
-              : -1;
+        cities.canal.forEach((city) => {
+          let owner = -1;
+          for (let i = 0; i < gameState.totalPlayers; i++) {
+            if (gameState.players[i].networks.canal[city.name]) {
+              owner = i;
+              break;
+            }
+          }
           const ownerClass = owner === -1 ? "empty" : `player${owner + 1}`;
           svg.innerHTML += `
                     <circle class="city-circle ${ownerClass}" 
@@ -577,8 +807,9 @@
         }
 
         addLog(`Built ${type} in ${cityName}`, "own");
-        sendAction({
+        broadcastAction({
           type: "buildNetwork",
+          playerId: gameState.playerId,
           networkType: type,
           cityName: cityName,
           networks: gameState.players[gameState.playerId].networks,
@@ -606,8 +837,9 @@
         gameState.players[gameState.playerId].score += 5;
 
         addLog(`Played ${gameState.selectedCard}`, "own");
-        sendAction({
+        broadcastAction({
           type: "playCard",
+          playerId: gameState.playerId,
           card: gameState.selectedCard,
           hand: hand,
           score: gameState.players[gameState.playerId].score,
@@ -622,43 +854,58 @@
           return;
         }
 
-        gameState.currentTurn = 1 - gameState.currentTurn;
+        gameState.currentTurn =
+          (gameState.currentTurn + 1) % gameState.totalPlayers;
         addLog(
           `${gameState.playerNames[gameState.currentTurn]}'s turn`,
           "system",
         );
-        sendAction({ type: "endTurn" });
+        broadcastAction({
+          type: "endTurn",
+          playerId: gameState.playerId,
+          nextPlayer: gameState.currentTurn,
+        });
         updateUI();
       }
 
-      function sendAction(action) {
-        if (dataChannel && dataChannel.readyState === "open") {
-          dataChannel.send(JSON.stringify(action));
-        }
+      function broadcastAction(action) {
+        const message = JSON.stringify(action);
+        Object.values(dataChannels).forEach((dc) => {
+          if (dc && dc.readyState === "open") {
+            dc.send(message);
+          }
+        });
       }
 
       function handleRemoteAction(action) {
-        const opponentId = 1 - gameState.playerId;
-
         switch (action.type) {
+          case "gameStart":
+            if (gameState.gameActive === false) {
+              startGame();
+            }
+            break;
+
           case "buildNetwork":
-            gameState.players[opponentId].networks = action.networks;
-            gameState.players[opponentId].money = action.money;
+            gameState.players[action.playerId].networks = action.networks;
+            gameState.players[action.playerId].money = action.money;
             addLog(
-              `Opponent built ${action.networkType} in ${action.cityName}`,
+              `${gameState.playerNames[action.playerId]} built ${action.networkType} in ${action.cityName}`,
               "other",
             );
             drawBoard();
             break;
 
           case "playCard":
-            gameState.hands[opponentId] = action.hand;
-            gameState.players[opponentId].score = action.score;
-            addLog(`Opponent played ${action.card}`, "other");
+            gameState.hands[action.playerId] = action.hand;
+            gameState.players[action.playerId].score = action.score;
+            addLog(
+              `${gameState.playerNames[action.playerId]} played ${action.card}`,
+              "other",
+            );
             break;
 
           case "endTurn":
-            gameState.currentTurn = 1 - gameState.currentTurn;
+            gameState.currentTurn = action.nextPlayer;
             addLog(
               `${gameState.playerNames[gameState.currentTurn]}'s turn`,
               "system",
@@ -717,6 +964,10 @@
         log.appendChild(entry);
         log.scrollTop = log.scrollHeight;
       }
+
+      // Initialize with 2 player mode
+      generateSetupBoxes(2);
+      setMode(2);
     </script>
   </body>
 </html>
